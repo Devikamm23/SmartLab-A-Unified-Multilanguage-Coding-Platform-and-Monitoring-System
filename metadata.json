@@ -1,0 +1,6 @@
+{
+  "name": "SmartLab - Unified Coding Platform & Monitoring System",
+  "description": "Educational multi-language coding platform and real-time monitoring system for GSSS Institute of Engineering and Technology for Women, Mysuru.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,15 @@
+export const COLLEGE_CONFIG = {
+  name: 'GSSS Institute of Engineering and Technology for Women, Mysuru',
+  shortName: 'GSSSIETW, Mysuru',
+  shortAcronym: 'GSSSIETW',
+  city: 'Mysuru',
+  state: 'Karnataka',
+  pincode: '570016',
+  address: 'KRS Road, Metagalli, Mysuru, Karnataka 570016',
+  usnPrefix: '4GW',
+  emailDomain: 'gsss.edu.in',
+  department: 'Department of Computer Science & Engineering',
+  affiliation: 'Affiliated to Visvesvaraya Technological University (VTU), Belagavi · Approved by AICTE, New Delhi',
+  accreditation: 'Accredited by NBA & NAAC with A+ Grade',
+  labFacility: 'Central Computing & Programming Laboratory',
+} as const;
