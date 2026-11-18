@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   AcademicIntegrityAlert,
   ActivityLog,
@@ -8,6 +8,7 @@ import {
   Experiment,
   FacultyNotificationItem,
   LabSession,
+  MakeupLabRequest,
   Quiz,
   QuizAttempt,
   Semester,
@@ -28,6 +29,7 @@ import {
   INITIAL_FACULTY_NOTIFICATIONS,
   INITIAL_INTEGRITY_ALERTS,
   INITIAL_LAB_SESSIONS,
+  INITIAL_MAKEUP_REQUESTS,
   INITIAL_SEMESTERS,
   INITIAL_STUDENT_LAB_SESSIONS,
   INITIAL_SUBJECTS,
@@ -42,6 +44,39 @@ import {
 } from '../data/rosterData';
 import { evaluateLabSubmission } from '../services/aiEvaluationService';
 import { analyzePastedCode, CodeComparisonResult } from '../services/similarityService';
+import {
+  RegistrationSyncResult,
+  saveStudentToSupabase,
+  saveFacultyToSupabase,
+  updateStudentInSupabase,
+  deleteStudentFromSupabase,
+  updateFacultyInSupabase,
+  deleteFacultyFromSupabase,
+  fetchRegisteredUsersFromSupabase,
+} from '../services/registrationService';
+
+export interface RegisterUserInput {
+  name: string;
+  email: string;
+  password?: string;
+  role: 'student' | 'teacher';
+  usn?: string;
+  semester?: number;
+  batch?: BatchName;
+  department: string;
+  employeeCode?: string;
+  designation?: string;
+  autoSignIn?: boolean;
+}
+
+export interface RegisterUserResult {
+  success: boolean;
+  syncedToSupabase: boolean;
+  needsRlsPolicy?: boolean;
+  message: string;
+  errorMessage?: string;
+  user?: User;
+}
 
 interface AppContextType {
   currentUser: User | null;
@@ -68,12 +103,15 @@ interface AppContextType {
   sessionStartTime: string;
   sessionEndTime: string;
   totalSessionMinutes: number;
+  isLabTimerRunning: boolean;
+  studentLabTimerSeconds: number;
   isSimulationActive: boolean;
   toggleSimulation: () => void;
-  canStudentExecute: (user?: User | null) => {
+  canStudentExecute: (user?: User | null, targetLabSessionId?: string | null) => {
     allowed: boolean;
     reason?: string;
     activeBatchSession: LabSession | null;
+    isMakeupAccess?: boolean;
   };
   startBatchLabSession: (params: {
     semesterNumber: number;
@@ -108,8 +146,19 @@ interface AppContextType {
   createQuiz: (quiz: Omit<Quiz, 'id' | 'createdAt' | 'createdBy'>) => void;
   toggleQuizStatus: (quizId: string, status: 'active' | 'draft' | 'closed') => void;
   submitQuizAttempt: (quizId: string, answers: Record<string, number>, timeTakenMinutes: number) => QuizAttempt | null;
+  // Makeup Lab Access Requests
+  makeupRequests: MakeupLabRequest[];
+  requestMakeupLab: (params: {
+    experimentId: string;
+    missedLabDate: string;
+    reason: string;
+    preferredSlot: string;
+  }) => { success: boolean; message: string };
+  approveMakeupRequest: (requestId: string, facultyRemarks?: string) => void;
+  rejectMakeupRequest: (requestId: string, facultyRemarks?: string) => void;
   // Auth
   login: (email: string, role: UserRole) => boolean;
+  registerUser: (input: RegisterUserInput) => Promise<RegisterUserResult>;
   logout: () => void;
   switchDemoUser: (userId: string) => void;
   // Student Actions
@@ -128,10 +177,10 @@ interface AppContextType {
   approveStudentMarks: (sessionId: string, approvedScore: number, feedback: string) => void;
   runAiEvaluationForSession: (sessionId: string) => void;
   // Admin Actions
-  addStudent: (data: Partial<User>) => void;
+  addStudent: (data: Partial<User>) => Promise<RegistrationSyncResult>;
   updateStudent: (id: string, data: Partial<User>) => void;
   deleteStudent: (id: string) => void;
-  addTeacher: (data: Partial<User>) => void;
+  addTeacher: (data: Partial<User>) => Promise<RegistrationSyncResult>;
   updateTeacher: (id: string, data: Partial<User>) => void;
   deleteTeacher: (id: string) => void;
   addSubject: (data: Partial<Subject>) => void;
@@ -145,23 +194,24 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  USER: 'smartlab_gsss_v2_user',
-  THEME: 'smartlab_gsss_v2_theme',
-  USERS: 'smartlab_gsss_v2_users',
-  SEMESTERS: 'smartlab_gsss_v2_semesters',
-  BATCHES: 'smartlab_gsss_v2_batches',
-  SUBJECTS: 'smartlab_gsss_v2_subjects',
-  EXPERIMENTS: 'smartlab_gsss_v2_experiments',
-  LAB_SESSIONS: 'smartlab_gsss_v2_lab_sessions',
-  STUDENT_SESSIONS: 'smartlab_gsss_v2_student_sessions',
-  CLIPBOARD: 'smartlab_gsss_v2_clipboard',
-  LOGS: 'smartlab_gsss_v2_logs',
-  SUBMISSIONS: 'smartlab_gsss_v2_submissions',
-  INTEGRITY_ALERTS: 'smartlab_gsss_v2_integrity_alerts',
-  STUDENT_NOTIFICATIONS: 'smartlab_gsss_v2_student_notifications',
-  FACULTY_NOTIFICATIONS: 'smartlab_gsss_v2_faculty_notifications',
-  QUIZZES: 'smartlab_gsss_v2_quizzes',
-  QUIZ_ATTEMPTS: 'smartlab_gsss_v2_quiz_attempts',
+  USER: 'smartlab_gsss_v7_user',
+  THEME: 'smartlab_gsss_v7_theme',
+  USERS: 'smartlab_gsss_v7_users',
+  SEMESTERS: 'smartlab_gsss_v7_semesters',
+  BATCHES: 'smartlab_gsss_v7_batches',
+  SUBJECTS: 'smartlab_gsss_v7_subjects',
+  EXPERIMENTS: 'smartlab_gsss_v7_experiments',
+  LAB_SESSIONS: 'smartlab_gsss_v7_lab_sessions',
+  STUDENT_SESSIONS: 'smartlab_gsss_v7_student_sessions',
+  CLIPBOARD: 'smartlab_gsss_v7_clipboard',
+  LOGS: 'smartlab_gsss_v7_logs',
+  SUBMISSIONS: 'smartlab_gsss_v7_submissions',
+  INTEGRITY_ALERTS: 'smartlab_gsss_v7_integrity_alerts',
+  STUDENT_NOTIFICATIONS: 'smartlab_gsss_v7_student_notifications',
+  FACULTY_NOTIFICATIONS: 'smartlab_gsss_v7_faculty_notifications',
+  QUIZZES: 'smartlab_gsss_v7_quizzes',
+  QUIZ_ATTEMPTS: 'smartlab_gsss_v7_quiz_attempts',
+  MAKEUP_REQUESTS: 'smartlab_gsss_v7_makeup_requests',
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -171,7 +221,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const stored = localStorage.getItem(STORAGE_KEYS.THEME);
       if (stored === 'light' || stored === 'dark') return stored;
     } catch {}
-    return 'dark';
+    return 'light';
   });
 
   useEffect(() => {
@@ -187,7 +237,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
-  // Current User (defaults to Student Devika Rao)
+  // Current User (defaults to Faculty Dr Girish S C)
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.USER);
@@ -324,6 +374,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return INITIAL_QUIZ_ATTEMPTS;
   });
 
+  // Makeup Lab Requests State
+  const [makeupRequests, setMakeupRequests] = useState<MakeupLabRequest[]>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.MAKEUP_REQUESTS);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return INITIAL_MAKEUP_REQUESTS;
+  });
+
   // Navigation
   const [activeNavTab, setActiveNavTab] = useState<string>('dashboard');
   const [activeLabSessionId, setActiveLabSessionId] = useState<string | null>('ls-501');
@@ -349,6 +408,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(STORAGE_KEYS.QUIZ_ATTEMPTS, JSON.stringify(quizAttempts));
   }, [quizAttempts]);
 
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.MAKEUP_REQUESTS, JSON.stringify(makeupRequests));
+  }, [makeupRequests]);
+
   // Sync to localStorage
   useEffect(() => {
     if (currentUser) {
@@ -361,6 +424,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
   }, [users]);
+
+  // Load registered students & faculty from Supabase on mount
+  useEffect(() => {
+    let isMounted = true;
+    fetchRegisteredUsersFromSupabase().then((remoteUsers) => {
+      if (!isMounted || remoteUsers.length === 0) return;
+      setUsers((prev) => {
+        const existingEmails = new Set(prev.map((u) => u.email.toLowerCase()));
+        const additions = remoteUsers.filter(
+          (ru) => !existingEmails.has(ru.email.toLowerCase())
+        );
+        return additions.length > 0 ? [...prev, ...additions] : prev;
+      });
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.LAB_SESSIONS, JSON.stringify(labSessions));
@@ -384,128 +465,181 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const currentRole: UserRole = currentUser?.role || 'student';
 
-  // One Active Batch at a Time: single ongoing LabSession
+  // One Active Batch at a Time: single ongoing regular LabSession (makeup sessions run independently)
   const activeBatchSession: LabSession | null =
-    labSessions.find((ls) => ls.status === 'ongoing') || null;
+    labSessions.find((ls) => ls.status === 'ongoing' && !ls.isMakeup) || null;
 
   // Session Duration (Default: 120 Minutes = 7200s)
   const [sessionRemainingSeconds, setSessionRemainingSeconds] = useState<number>(4920); // 82 mins remaining
+  const [isLabTimerRunning, setIsLabTimerRunning] = useState<boolean>(false);
+  const [studentLabTimerSeconds, setStudentLabTimerSeconds] = useState<number>(0);
   const sessionStartTime = activeBatchSession?.startTime || '09:00 AM';
   const sessionEndTime = activeBatchSession?.endTime || '11:00 AM';
   const totalSessionMinutes = activeBatchSession?.durationMinutes || 120;
-  const [isSimulationActive, setIsSimulationActive] = useState<boolean>(true);
+  const [isSimulationActive, setIsSimulationActive] = useState<boolean>(false);
 
   const toggleSimulation = () => {
     setIsSimulationActive((prev) => !prev);
   };
 
-  // 1-Second Heartbeat to update countdown, active/idle time, and live activity statuses
+  const tickCounterRef = useRef<number>(0);
+
+  // Sync live state across browser tabs (e.g. Student coding in Tab 1 -> Teacher Dashboard in Tab 2)
   useEffect(() => {
+    const handleStorageSync = (e: StorageEvent) => {
+      if (!e.newValue) return;
+      try {
+        if (e.key === STORAGE_KEYS.STUDENT_SESSIONS) {
+          setStudentLabSessions(JSON.parse(e.newValue));
+        } else if (e.key === STORAGE_KEYS.LAB_SESSIONS) {
+          setLabSessions(JSON.parse(e.newValue));
+        } else if (e.key === STORAGE_KEYS.SUBMISSIONS) {
+          setSubmissions(JSON.parse(e.newValue));
+        } else if (e.key === STORAGE_KEYS.INTEGRITY_ALERTS) {
+          setIntegrityAlerts(JSON.parse(e.newValue));
+        } else if (e.key === STORAGE_KEYS.QUIZZES) {
+          setQuizzes(JSON.parse(e.newValue));
+        } else if (e.key === STORAGE_KEYS.QUIZ_ATTEMPTS) {
+          setQuizAttempts(JSON.parse(e.newValue));
+        } else if (e.key === STORAGE_KEYS.MAKEUP_REQUESTS) {
+          setMakeupRequests(JSON.parse(e.newValue));
+        } else if (e.key === STORAGE_KEYS.STUDENT_NOTIFICATIONS) {
+          setStudentNotifications(JSON.parse(e.newValue));
+        } else if (e.key === STORAGE_KEYS.FACULTY_NOTIFICATIONS) {
+          setFacultyNotifications(JSON.parse(e.newValue));
+        }
+      } catch {}
+    };
+    window.addEventListener('storage', handleStorageSync);
+    return () => window.removeEventListener('storage', handleStorageSync);
+  }, []);
+
+  // 500ms Heartbeat for responsive 3-second idle detection + 1-second timers & cohort simulation
+  useEffect(() => {
+    const IDLE_THRESHOLD_MS = 3000; // 3 seconds of inactivity in code editor -> Idle
+
     const interval = setInterval(() => {
-      // 1. Decrement lab session countdown timer (stops at 0)
-      if (activeBatchSession) {
+      tickCounterRef.current += 1;
+      const isFullSecond = tickCounterRef.current % 2 === 0;
+      const isSimCycle = tickCounterRef.current % 16 === 0; // every ~8 seconds
+      const now = Date.now();
+
+      // 1. Decrement faculty batch countdown timer & advance student lab timer (only once student clicks Start Lab)
+      if (isFullSecond && activeBatchSession) {
         setSessionRemainingSeconds((prev) => Math.max(0, prev - 1));
       }
-
-      // 2. Track current student's active vs idle status (2-minute idle threshold)
-      if (currentRole === 'student' && currentUser && activeLabSessionId) {
-        setStudentLabSessions((prev) => {
-          const index = prev.findIndex(
-            (s) => s.studentId === currentUser.id && s.labSessionId === activeLabSessionId
-          );
-          if (index === -1) return prev;
-
-          const currentSession = prev[index];
-          if (currentSession.activityStatus === 'Submitted' || currentSession.activityStatus === 'Compiling') {
-            return prev; // Do not alter submitted or actively compiling status
-          }
-
-          const lastInteraction = new Date(currentSession.lastInteractionTime).getTime();
-          const now = Date.now();
-          const idleElapsedMs = now - lastInteraction;
-          const isIdle = idleElapsedMs > 120000; // 2 minutes (120 seconds) idle threshold
-
-          // Activity status logic
-          let newActivityStatus: StudentActivityStatus = currentSession.activityStatus;
-          if (isIdle) {
-            newActivityStatus = 'Idle'; // Idle - Yellow
-          } else if (currentSession.activityStatus === 'Typing') {
-            // If active within last 20 seconds, stay Typing, else transition to Viewing
-            if (idleElapsedMs > 20000) {
-              newActivityStatus = 'Viewing'; // Viewing - Blue
-            }
-          }
-
-          const updated: StudentLabSession = {
-            ...currentSession,
-            totalDurationSeconds: currentSession.totalDurationSeconds + 1,
-            activeTimeSeconds: isIdle ? currentSession.activeTimeSeconds : currentSession.activeTimeSeconds + 1,
-            idleTimeSeconds: isIdle ? currentSession.idleTimeSeconds + 1 : currentSession.idleTimeSeconds,
-            remainingSeconds: Math.max(0, currentSession.remainingSeconds - 1),
-            status: isIdle ? 'idle' : 'active',
-            activityStatus: newActivityStatus,
-          };
-
-          const copy = [...prev];
-          copy[index] = updated;
-          return copy;
-        });
+      if (isFullSecond && isLabTimerRunning && currentRole === 'student') {
+        setStudentLabTimerSeconds((prev) => prev + 1);
       }
 
-      // 3. Concurrent batch simulation across active cohort (Typing, Compiling, Idle, Viewing)
-      if (isSimulationActive && activeBatchSession) {
-        setStudentLabSessions((prev) => {
-          if (sessionRemainingSeconds % 8 !== 0) return prev;
+      // 2. Track real student active vs idle status (3-second inactivity threshold)
+      setStudentLabSessions((prev) => {
+        let changed = false;
 
-          return prev.map((s) => {
-            if (
-              s.labSessionId !== activeBatchSession.id ||
-              s.studentId === currentUser?.id ||
-              s.activityStatus === 'Submitted' ||
-              s.activityStatus === 'Absent'
-            ) {
+        const next = prev.map((s) => {
+          const isCurrentStudentActive =
+            currentRole === 'student' &&
+            currentUser &&
+            activeLabSessionId &&
+            s.studentId === currentUser.id &&
+            s.labSessionId === activeLabSessionId;
+
+          const isRealTrackedSession =
+            !s.isSimulated &&
+            activeBatchSession &&
+            s.labSessionId === activeBatchSession.id;
+
+          // Update real student sessions (both on Student view and Teacher view)
+          if (isCurrentStudentActive || isRealTrackedSession) {
+            if (s.activityStatus === 'Submitted' || s.activityStatus === 'Compiling' || s.activityStatus === 'Absent') {
               return s;
             }
 
+            const lastInteraction = s.lastInteractionTime ? new Date(s.lastInteractionTime).getTime() : 0;
+            const idleElapsedMs = now - lastInteraction;
+            const isIdle = idleElapsedMs >= IDLE_THRESHOLD_MS;
+
+            const newActivityStatus: StudentActivityStatus = isIdle
+              ? 'Idle'
+              : s.activityStatus === 'Idle'
+              ? 'Typing'
+              : s.activityStatus;
+
+            const newStatus: 'active' | 'idle' | 'completed' = isIdle ? 'idle' : 'active';
+
+            // Only advance 1-second counters on full seconds; transition to Idle immediately on any 500ms check
+            if (!isFullSecond && newActivityStatus === s.activityStatus && newStatus === s.status) {
+              return s;
+            }
+
+            changed = true;
+            return {
+              ...s,
+              totalDurationSeconds: isFullSecond ? s.totalDurationSeconds + 1 : s.totalDurationSeconds,
+              activeTimeSeconds: isFullSecond && !isIdle ? s.activeTimeSeconds + 1 : s.activeTimeSeconds,
+              idleTimeSeconds: isFullSecond && isIdle ? s.idleTimeSeconds + 1 : s.idleTimeSeconds,
+              remainingSeconds: isFullSecond ? Math.max(0, s.remainingSeconds - 1) : s.remainingSeconds,
+              status: newStatus,
+              activityStatus: newActivityStatus,
+            };
+          }
+
+          // 3. Concurrent batch simulation across remaining simulated cohort every 8 seconds
+          if (
+            isSimCycle &&
+            isSimulationActive &&
+            activeBatchSession &&
+            s.labSessionId === activeBatchSession.id &&
+            s.studentId !== currentUser?.id &&
+            s.isSimulated &&
+            s.activityStatus !== 'Submitted' &&
+            s.activityStatus !== 'Absent'
+          ) {
             const rand = Math.random();
             let simulatedStatus: StudentActivityStatus = s.activityStatus;
             let extraCompiles = 0;
 
             if (s.activityStatus === 'Compiling') {
-              // Finish compiling and return to Typing or Viewing
               simulatedStatus = rand > 0.35 ? 'Typing' : 'Viewing';
             } else if (s.activityStatus === 'Typing') {
               if (rand > 0.78) {
                 simulatedStatus = 'Compiling';
                 extraCompiles = 1;
               } else if (rand < 0.15) {
-                simulatedStatus = 'Viewing';
+                simulatedStatus = 'Idle';
               }
             } else if (s.activityStatus === 'Viewing') {
               if (rand > 0.6) {
                 simulatedStatus = 'Typing';
-              } else if (rand < 0.15) {
+              } else if (rand < 0.2) {
                 simulatedStatus = 'Idle';
               }
             } else if (s.activityStatus === 'Idle' && rand > 0.85) {
               simulatedStatus = 'Typing';
             }
 
-            return {
-              ...s,
-              activityStatus: simulatedStatus,
-              compilationAttempts: s.compilationAttempts + extraCompiles,
-              programExecutions: s.programExecutions + extraCompiles,
-              successfulCompilations: s.successfulCompilations + extraCompiles,
-              isSimulated: true,
-            };
-          });
+            if (simulatedStatus !== s.activityStatus || extraCompiles > 0) {
+              changed = true;
+              return {
+                ...s,
+                activityStatus: simulatedStatus,
+                compilationAttempts: s.compilationAttempts + extraCompiles,
+                programExecutions: s.programExecutions + extraCompiles,
+                successfulCompilations: s.successfulCompilations + extraCompiles,
+                isSimulated: true,
+              };
+            }
+          }
+
+          return s;
         });
-      }
-    }, 1000);
+
+        return changed ? next : prev;
+      });
+    }, 500);
 
     return () => clearInterval(interval);
-  }, [currentRole, currentUser?.id, activeLabSessionId, isSimulationActive, sessionRemainingSeconds]);
+  }, [currentRole, currentUser?.id, activeLabSessionId, activeBatchSession?.id, isSimulationActive, isLabTimerRunning]);
 
   // Auth methods
   const login = (email: string, role: UserRole): boolean => {
@@ -545,12 +679,98 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   };
 
+  const registerUser = async (input: RegisterUserInput): Promise<RegisterUserResult> => {
+    const normalizedEmail = input.email.trim().toLowerCase();
+    const cleanName = input.name.trim();
+    const sem = Number(input.semester || 5);
+
+    const newUser: User =
+      input.role === 'student'
+        ? {
+            id: `usr-student-${Date.now()}`,
+            name: cleanName,
+            studentName: cleanName,
+            email: normalizedEmail,
+            role: 'student',
+            usn: (input.usn || `4GW24IS${Math.floor(100 + Math.random() * 900)}`).toUpperCase(),
+            admissionYear: 2024,
+            currentSemester: sem,
+            semester: sem,
+            academicYear: '2026-2027',
+            batch: input.batch || 'Batch A',
+            department: input.department || 'Information Science & Engineering',
+            createdAt: new Date().toISOString().split('T')[0],
+          }
+        : {
+            id: `usr-teacher-${Date.now()}`,
+            name: cleanName,
+            email: normalizedEmail,
+            role: 'teacher',
+            employeeCode:
+              input.employeeCode?.trim().toUpperCase() ||
+              `FAC-ISE-${Math.floor(100 + Math.random() * 900)}`,
+            designation: input.designation?.trim() || 'Assistant Professor',
+            department: input.department || 'Information Science & Engineering',
+            createdAt: new Date().toISOString().split('T')[0],
+            assignedBatches: [],
+          };
+
+    setUsers((prev) => {
+      const idx = prev.findIndex(
+        (u) => u.email.toLowerCase() === normalizedEmail && u.role === newUser.role
+      );
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = { ...prev[idx], ...newUser, id: prev[idx].id };
+        return updated;
+      }
+      return [...prev, newUser];
+    });
+
+    const syncResult =
+      newUser.role === 'student'
+        ? await saveStudentToSupabase(newUser)
+        : await saveFacultyToSupabase(newUser);
+
+    if (syncResult.syncedToSupabase) {
+      logActivity(
+        'Registration Saved to Supabase',
+        `${newUser.name} (${newUser.role}) registered and stored in Supabase table "${syncResult.table}".`,
+        'success'
+      );
+    } else {
+      logActivity(
+        'Registration Saved Locally',
+        `${newUser.name} registered locally. Supabase sync warning (${syncResult.errorCode || 'network'}): ${syncResult.errorMessage || 'Check RLS policies.'}`,
+        'warning'
+      );
+    }
+
+    if (input.autoSignIn) {
+      setCurrentUser(newUser);
+      setActiveNavTab('dashboard');
+    }
+
+    return {
+      success: true,
+      syncedToSupabase: syncResult.syncedToSupabase,
+      needsRlsPolicy: syncResult.needsRlsPolicy,
+      errorMessage: syncResult.errorMessage,
+      message: syncResult.syncedToSupabase
+        ? `Registration complete! Saved to your Supabase "${syncResult.table}" table.`
+        : `Account created locally, but Supabase blocked the write (${syncResult.errorMessage || 'RLS policy required'}).`,
+      user: newUser,
+    };
+  };
+
   const logout = () => {
     if (currentUser) {
       logActivity('User Signout', `${currentUser.name} signed out.`, 'info');
     }
     setCurrentUser(null);
     setActiveNavTab('dashboard');
+    setIsLabTimerRunning(false);
+    setStudentLabTimerSeconds(0);
   };
 
   const switchDemoUser = (userId: string) => {
@@ -558,6 +778,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (target) {
       setCurrentUser(target);
       setActiveNavTab('dashboard');
+      setIsLabTimerRunning(false);
+      setStudentLabTimerSeconds(0);
       logActivity('Role Switched', `Persona changed to ${target.name} (${target.role.toUpperCase()}).`, 'info');
     }
   };
@@ -565,6 +787,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Student Actions
   const startLab = (labSessionId: string) => {
     if (!currentUser) return;
+    if (!isLabTimerRunning || activeLabSessionId !== labSessionId) {
+      setStudentLabTimerSeconds(0);
+    }
+    setIsLabTimerRunning(true);
     setActiveLabSessionId(labSessionId);
     setActiveNavTab('editor');
 
@@ -625,14 +851,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const trackEditorInteraction = (isMeaningfulAction = true) => {
-    if (!currentUser || !activeLabSessionId) return;
+    const targetSessionId = activeBatchSession?.id || activeLabSessionId;
+    if (!currentUser || !targetSessionId) return;
+    const nowIso = new Date().toISOString();
     setStudentLabSessions((prev) =>
       prev.map((s) =>
-        s.studentId === currentUser.id && s.labSessionId === activeLabSessionId
+        s.studentId === currentUser.id && s.labSessionId === targetSessionId
           ? {
               ...s,
-              lastInteractionTime: new Date().toISOString(),
+              lastInteractionTime: nowIso,
               status: 'active',
+              isSimulated: false,
               activityStatus: s.activityStatus === 'Submitted' ? 'Submitted' : 'Typing', // 1. Typing - Green
             }
           : s
@@ -641,10 +870,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const trackPageNavigation = (pageName: string) => {
-    if (!currentUser || currentRole !== 'student' || !activeLabSessionId) return;
+    const targetSessionId = activeBatchSession?.id || activeLabSessionId;
+    if (!currentUser || currentRole !== 'student' || !targetSessionId) return;
     setStudentLabSessions((prev) =>
       prev.map((s) =>
-        s.studentId === currentUser.id && s.labSessionId === activeLabSessionId && s.activityStatus !== 'Submitted'
+        s.studentId === currentUser.id && s.labSessionId === targetSessionId && s.activityStatus !== 'Submitted'
           ? {
               ...s,
               lastInteractionTime: new Date().toISOString(),
@@ -656,12 +886,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateActiveCode = (code: string) => {
-    trackEditorInteraction(true);
-    if (!currentUser || !activeLabSessionId) return;
+    const targetSessionId = activeBatchSession?.id || activeLabSessionId;
+    if (!currentUser || !targetSessionId) return;
+    const nowIso = new Date().toISOString();
     setStudentLabSessions((prev) =>
       prev.map((s) =>
-        s.studentId === currentUser.id && s.labSessionId === activeLabSessionId
-          ? { ...s, currentCode: code, activityStatus: s.activityStatus === 'Submitted' ? 'Submitted' : 'Typing' }
+        s.studentId === currentUser.id && s.labSessionId === targetSessionId
+          ? {
+              ...s,
+              currentCode: code,
+              lastInteractionTime: nowIso,
+              status: 'active',
+              isSimulated: false,
+              activityStatus: s.activityStatus === 'Submitted' ? 'Submitted' : 'Typing',
+            }
           : s
       )
     );
@@ -1011,6 +1249,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
     );
 
+    if (session?.isMakeup) {
+      setMakeupRequests((prev) =>
+        prev.map((r) =>
+          r.studentId === currentUser.id &&
+          r.makeupLabSessionId === activeLabSessionId &&
+          r.status === 'Approved'
+            ? { ...r, status: 'Completed' }
+            : r
+        )
+      );
+      setLabSessions((prev) =>
+        prev.map((ls) =>
+          ls.id === activeLabSessionId ? { ...ls, status: 'completed', endedAt: new Date().toISOString() } : ls
+        )
+      );
+    }
+
     logActivity(
       'Experiment Submitted & AI Evaluated',
       `${currentUser.name} submitted solution for ${session?.experimentName}. AI Suggested Score: ${evaluatedScore}/50. Verdict: ${status}.`,
@@ -1074,13 +1329,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logActivity('AI Re-Evaluation', `Generated new AI rubric breakdown for session ${sessionId}.`, 'info');
   };
 
-  // Strict One-Active-Batch execution gate for students
-  const canStudentExecute = (targetUser?: User | null) => {
+  // Strict One-Active-Batch execution gate for students (with Approved Makeup Lab override)
+  const canStudentExecute = (targetUser?: User | null, targetLabSessionId?: string | null) => {
     const userToCheck = targetUser === undefined ? currentUser : targetUser;
+    const checkSessionId = targetLabSessionId ?? activeLabSessionId;
+    const targetSessionObj = checkSessionId
+      ? labSessions.find((ls) => ls.id === checkSessionId)
+      : null;
+
+    if (
+      userToCheck?.role === 'student' &&
+      targetSessionObj?.isMakeup &&
+      targetSessionObj.status === 'ongoing' &&
+      targetSessionObj.allowedStudentIds?.includes(userToCheck.id)
+    ) {
+      return { allowed: true, activeBatchSession, isMakeupAccess: true };
+    }
+
+    if (
+      userToCheck?.role === 'student' &&
+      checkSessionId &&
+      makeupRequests.some(
+        (r) =>
+          r.studentId === userToCheck.id &&
+          r.status === 'Approved' &&
+          r.makeupLabSessionId === checkSessionId
+      )
+    ) {
+      return { allowed: true, activeBatchSession, isMakeupAccess: true };
+    }
+
     if (!activeBatchSession) {
       return {
         allowed: false,
-        reason: 'No active batch lab session is currently running. Please wait for your faculty to start a session.',
+        reason: 'No active batch lab session is currently running. Please wait for your faculty to start a session or use an approved Makeup Lab.',
         activeBatchSession: null,
       };
     }
@@ -1107,6 +1389,194 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
     }
     return { allowed: true, activeBatchSession };
+  };
+
+  // Makeup Lab Access Handlers
+  const requestMakeupLab = ({
+    experimentId,
+    missedLabDate,
+    reason,
+    preferredSlot,
+  }: {
+    experimentId: string;
+    missedLabDate: string;
+    reason: string;
+    preferredSlot: string;
+  }) => {
+    if (!currentUser) {
+      return { success: false, message: 'Please sign in to submit a makeup lab request.' };
+    }
+    const exp = experiments.find((e) => e.id === experimentId) || experiments[0];
+    const subj = subjects.find((s) => s.id === exp?.subjectId);
+    const sem = currentUser.semester || currentUser.currentSemester || 5;
+    const batch = currentUser.batch || 'Batch A';
+
+    const alreadyPending = makeupRequests.some(
+      (r) =>
+        r.studentId === currentUser.id &&
+        r.experimentId === exp.id &&
+        (r.status === 'Pending' || r.status === 'Approved')
+    );
+    if (alreadyPending) {
+      return {
+        success: false,
+        message: `You already have an active or pending makeup lab request for "${exp.title}".`,
+      };
+    }
+
+    const newReq: MakeupLabRequest = {
+      id: `mk-${Date.now()}`,
+      studentId: currentUser.id,
+      studentName: currentUser.name,
+      usn: currentUser.usn || '4GW24IS010',
+      semesterNumber: sem,
+      batch,
+      experimentId: exp.id,
+      experimentName: exp.title,
+      subjectCode: exp.subjectCode || subj?.code || `IS${sem}04`,
+      subjectName: subj?.name || 'Information Science Laboratory',
+      programmingLanguage: exp.programmingLanguage,
+      missedLabDate,
+      reason,
+      preferredSlot,
+      status: 'Pending',
+      requestedAt: new Date().toISOString(),
+    };
+
+    setMakeupRequests((prev) => [newReq, ...prev]);
+
+    const facNotif: FacultyNotificationItem = {
+      id: `fac-mk-${Date.now()}`,
+      title: 'Makeup Lab Access Request',
+      description: `${currentUser.name} [${newReq.usn}] requested makeup lab access for "${exp.title}" (missed on ${missedLabDate}). Reason: ${reason}`,
+      category: 'session',
+      timestamp: 'Just now',
+      isRead: false,
+      priority: 'important',
+      studentName: currentUser.name,
+      usn: newReq.usn,
+      assignmentName: exp.title,
+    };
+    setFacultyNotifications((prev) => [facNotif, ...prev]);
+
+    logActivity(
+      'Makeup Lab Requested',
+      `${currentUser.name} requested makeup access for "${exp.title}" (missed ${missedLabDate}).`,
+      'info'
+    );
+
+    return {
+      success: true,
+      message: `Makeup lab request submitted for "${exp.title}". Faculty will review and unlock access.`,
+    };
+  };
+
+  const approveMakeupRequest = (requestId: string, facultyRemarks?: string) => {
+    const req = makeupRequests.find((r) => r.id === requestId);
+    if (!req) return;
+
+    const now = new Date();
+    const makeupSessionId = `ls-makeup-${Date.now()}`;
+    const newMakeupSession: LabSession = {
+      id: makeupSessionId,
+      title: `Makeup Lab: ${req.experimentName}`,
+      subjectId: `sub-${req.subjectCode.toLowerCase()}`,
+      subjectName: req.subjectName,
+      subjectCode: req.subjectCode,
+      semesterNumber: req.semesterNumber,
+      batch: req.batch,
+      experimentId: req.experimentId,
+      experimentName: req.experimentName,
+      programmingLanguage: req.programmingLanguage,
+      teacherId: currentUser?.id || 'usr-teacher-1',
+      teacherName: currentUser?.name || 'Dr Girish S C',
+      startDate: now.toISOString().split('T')[0],
+      startTime: 'Makeup',
+      endTime: 'Flexible (120m)',
+      durationMinutes: 120,
+      startedAt: now.toISOString(),
+      instructions: `Approved Makeup Lab session for ${req.studentName} (${req.usn}). Complete and submit to receive evaluation marks.`,
+      isCopyPasteRestricted: true,
+      status: 'ongoing',
+      createdAt: now.toISOString(),
+      isMakeup: true,
+      allowedStudentIds: [req.studentId],
+    };
+
+    setLabSessions((prev) => [newMakeupSession, ...prev]);
+    setMakeupRequests((prev) =>
+      prev.map((r) =>
+        r.id === requestId
+          ? {
+              ...r,
+              status: 'Approved',
+              reviewedBy: currentUser?.name || 'Dr Girish S C',
+              reviewedAt: now.toISOString(),
+              facultyRemarks: facultyRemarks || 'Makeup lab access unlocked by faculty.',
+              makeupLabSessionId: makeupSessionId,
+            }
+          : r
+      )
+    );
+
+    const studNotif: StudentNotificationItem = {
+      id: `notif-mk-${Date.now()}`,
+      studentId: req.studentId,
+      title: `Makeup Lab Access Granted: ${req.experimentName}`,
+      description: `${currentUser?.name || 'Dr Girish S C'} approved your makeup lab request for ${req.experimentName}. Open your dashboard and click Start Makeup Lab to begin.`,
+      category: 'lab',
+      subCategory: 'makeup_approved',
+      timestamp: 'Just now',
+      isRead: false,
+      priority: 'important',
+      assignmentName: req.experimentName,
+    };
+    setStudentNotifications((prev) => [studNotif, ...prev]);
+
+    logActivity(
+      'Makeup Lab Approved',
+      `Granted makeup lab access to ${req.studentName} (${req.usn}) for "${req.experimentName}".`,
+      'success'
+    );
+  };
+
+  const rejectMakeupRequest = (requestId: string, facultyRemarks?: string) => {
+    const req = makeupRequests.find((r) => r.id === requestId);
+    if (!req) return;
+
+    setMakeupRequests((prev) =>
+      prev.map((r) =>
+        r.id === requestId
+          ? {
+              ...r,
+              status: 'Rejected',
+              reviewedBy: currentUser?.name || 'Dr Girish S C',
+              reviewedAt: new Date().toISOString(),
+              facultyRemarks: facultyRemarks || 'Makeup request declined by faculty.',
+            }
+          : r
+      )
+    );
+
+    const studNotif: StudentNotificationItem = {
+      id: `notif-mk-rej-${Date.now()}`,
+      studentId: req.studentId,
+      title: `Makeup Lab Request Declined: ${req.experimentName}`,
+      description: facultyRemarks || `Please contact ${currentUser?.name || 'Dr Girish S C'} in the department lab for rescheduling.`,
+      category: 'lab',
+      subCategory: 'makeup_rejected',
+      timestamp: 'Just now',
+      isRead: false,
+      priority: 'normal',
+      assignmentName: req.experimentName,
+    };
+    setStudentNotifications((prev) => [studNotif, ...prev]);
+
+    logActivity(
+      'Makeup Lab Declined',
+      `Declined makeup lab request from ${req.studentName} (${req.usn}) for "${req.experimentName}".`,
+      'warning'
+    );
   };
 
   // Start a Lab Session for a single (Semester, Batch) — enforces One Active Batch at a Time
@@ -1165,7 +1635,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       experimentName: chosenExperiment?.title || 'Laboratory Experiment',
       programmingLanguage: lang,
       teacherId: currentUser?.id || 'usr-teacher-1',
-      teacherName: currentUser?.name || 'Dr. Arvind Kulkarni',
+      teacherName: currentUser?.name || 'Dr Girish S C',
       startDate: now.toISOString().split('T')[0],
       startTime: fmt(now),
       endTime: fmt(endDateObj),
@@ -1182,7 +1652,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveLabSessionId(newSession.id);
     setSessionRemainingSeconds(durationMinutes * 60);
 
-    // Populate live monitoring records for all 20+ students in the selected semester & batch
+    // Populate live monitoring records for registered students in the selected semester & batch
     const batchStudents = users.filter(
       (u) =>
         u.role === 'student' &&
@@ -1252,7 +1722,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newQuiz: Quiz = {
       ...quizData,
       id: `quiz-${Date.now()}`,
-      createdBy: currentUser?.name || 'Dr. Arvind Kulkarni',
+      createdBy: currentUser?.name || 'Dr Girish S C',
       createdAt: new Date().toISOString(),
     };
     setQuizzes((prev) => [newQuiz, ...prev]);
@@ -1337,7 +1807,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       experimentName: data.experimentName || 'Programming Experiment',
       programmingLanguage: data.programmingLanguage || 'python',
       teacherId: currentUser?.id || 'usr-teacher-1',
-      teacherName: currentUser?.name || 'Dr. Arvind Kulkarni',
+      teacherName: currentUser?.name || 'Dr Girish S C',
       startDate: data.startDate || new Date().toISOString().split('T')[0],
       startTime: data.startTime || '09:00',
       endTime: data.endTime || '11:00',
@@ -1416,55 +1886,91 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Admin actions
-  const addStudent = (data: Partial<User>) => {
+  const addStudent = async (data: Partial<User>): Promise<RegistrationSyncResult> => {
+    const sem = Number(data.semester || 5);
     const newStudent: User = {
       id: `usr-student-${Date.now()}`,
       name: data.name || 'New Student',
-      email: data.email || 'student@gsss.edu.in',
+      studentName: data.name || 'New Student',
+      email: (data.email || 'student@gsss.edu.in').trim().toLowerCase(),
       role: 'student',
-      usn: data.usn || '4GW21CS099',
-      semester: data.semester || 5,
+      usn: (data.usn || '4GW24IS099').toUpperCase(),
+      semester: sem,
+      currentSemester: sem,
       batch: data.batch || 'Batch A',
-      department: data.department || 'Computer Science & Engineering',
+      department: data.department || 'Information Science & Engineering',
+      academicYear: '2026-2027',
       createdAt: new Date().toISOString().split('T')[0],
     };
     setUsers((prev) => [...prev, newStudent]);
-    logActivity('Student Enrolled', `Admin created student account ${newStudent.name} (${newStudent.usn}).`, 'info');
+    const syncRes = await saveStudentToSupabase(newStudent);
+    logActivity(
+      'Student Enrolled',
+      syncRes.syncedToSupabase
+        ? `Admin enrolled ${newStudent.name} (${newStudent.usn}) and saved to Supabase.`
+        : `Admin enrolled ${newStudent.name} (${newStudent.usn}) locally (Supabase: ${syncRes.errorMessage || 'sync pending'}).`,
+      syncRes.syncedToSupabase ? 'success' : 'warning'
+    );
+    return syncRes;
   };
 
   const updateStudent = (id: string, data: Partial<User>) => {
+    const existing = users.find((u) => u.id === id);
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)));
+    if (existing?.email) {
+      updateStudentInSupabase(existing.email, data);
+    }
     logActivity('Student Updated', `Admin modified records for student ID ${id}.`, 'info');
   };
 
   const deleteStudent = (id: string) => {
+    const existing = users.find((u) => u.id === id);
     setUsers((prev) => prev.filter((u) => u.id !== id));
+    if (existing?.email) {
+      deleteStudentFromSupabase(existing.email);
+    }
     logActivity('Student Deleted', `Admin removed student ID ${id}.`, 'warning');
   };
 
-  const addTeacher = (data: Partial<User>) => {
+  const addTeacher = async (data: Partial<User>): Promise<RegistrationSyncResult> => {
     const newTeacher: User = {
       id: `usr-teacher-${Date.now()}`,
       name: data.name || 'New Faculty',
-      email: data.email || 'faculty@gsss.edu.in',
+      email: (data.email || 'faculty@gsss.edu.in').trim().toLowerCase(),
       role: 'teacher',
-      employeeCode: data.employeeCode || `TCH-CSE-${Math.floor(100 + Math.random() * 900)}`,
+      employeeCode: data.employeeCode || `FAC-ISE-${Math.floor(100 + Math.random() * 900)}`,
       designation: data.designation || 'Assistant Professor',
-      department: data.department || 'Computer Science & Engineering',
+      department: data.department || 'Information Science & Engineering',
       createdAt: new Date().toISOString().split('T')[0],
       assignedBatches: data.assignedBatches || [],
     };
     setUsers((prev) => [...prev, newTeacher]);
-    logActivity('Teacher Added', `Admin registered faculty account ${newTeacher.name}.`, 'info');
+    const syncRes = await saveFacultyToSupabase(newTeacher);
+    logActivity(
+      'Teacher Added',
+      syncRes.syncedToSupabase
+        ? `Admin registered faculty ${newTeacher.name} and saved to Supabase.`
+        : `Admin registered faculty ${newTeacher.name} locally (Supabase: ${syncRes.errorMessage || 'sync pending'}).`,
+      syncRes.syncedToSupabase ? 'success' : 'warning'
+    );
+    return syncRes;
   };
 
   const updateTeacher = (id: string, data: Partial<User>) => {
+    const existing = users.find((u) => u.id === id);
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)));
+    if (existing?.email) {
+      updateFacultyInSupabase(existing.email, data);
+    }
     logActivity('Teacher Updated', `Admin updated faculty ID ${id}.`, 'info');
   };
 
   const deleteTeacher = (id: string) => {
+    const existing = users.find((u) => u.id === id);
     setUsers((prev) => prev.filter((u) => u.id !== id));
+    if (existing?.email) {
+      deleteFacultyFromSupabase(existing.email);
+    }
     logActivity('Teacher Deleted', `Admin removed faculty ID ${id}.`, 'warning');
   };
 
@@ -1563,11 +2069,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setFacultyNotifications(INITIAL_FACULTY_NOTIFICATIONS);
     setQuizzes(INITIAL_QUIZZES);
     setQuizAttempts(INITIAL_QUIZ_ATTEMPTS);
-    setCurrentUser(INITIAL_USERS[0]); // Devika Rao (student)
+    setMakeupRequests(INITIAL_MAKEUP_REQUESTS);
+    setCurrentUser(INITIAL_USERS[0]);
     setActiveNavTab('dashboard');
     setActiveLabSessionId('ls-501');
     setSessionRemainingSeconds(4920);
-    setTheme('dark');
+    setIsLabTimerRunning(false);
+    setStudentLabTimerSeconds(0);
+    setIsSimulationActive(false);
+    setTheme('light');
   };
 
   return (
@@ -1596,6 +2106,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         sessionStartTime,
         sessionEndTime,
         totalSessionMinutes,
+        isLabTimerRunning,
+        studentLabTimerSeconds,
         isSimulationActive,
         toggleSimulation,
         canStudentExecute,
@@ -1620,7 +2132,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         createQuiz,
         toggleQuizStatus,
         submitQuizAttempt,
+        makeupRequests,
+        requestMakeupLab,
+        approveMakeupRequest,
+        rejectMakeupRequest,
         login,
+        registerUser,
         logout,
         switchDemoUser,
         startLab,

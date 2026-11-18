@@ -51,6 +51,7 @@ export const TeacherDashboard: React.FC = () => {
     clipboardEvents,
     integrityAlerts,
     quizzes,
+    makeupRequests,
     activeBatchSession,
     sessionRemainingSeconds,
     startBatchLabSession,
@@ -103,6 +104,7 @@ export const TeacherDashboard: React.FC = () => {
   // Live monitoring records matching selected semester & batch (or active session for that batch)
   const matchingBatchSessions = studentLabSessions.filter(
     (s) =>
+      !s.labSessionId.startsWith('ls-prev-') &&
       s.semesterNumber === selectedSemester &&
       s.batch === selectedBatch &&
       (!activeBatchSession ||
@@ -207,7 +209,7 @@ export const TeacherDashboard: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* 1. FACULTY PROFILE CARD (Top of Faculty Dashboard) */}
-      <div className="bg-[#0e1738] border border-slate-800 rounded-2xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-xl">
+      <div className="bg-white border border-blue-100 rounded-2xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center gap-5">
           {/* Faculty Profile Photo */}
           <div className="relative shrink-0">
@@ -215,7 +217,7 @@ export const TeacherDashboard: React.FC = () => {
               <img
                 src={currentUser.avatar}
                 alt={currentUser.name}
-                className="w-20 h-20 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-lg shadow-indigo-500/20"
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-blue-500/50 shadow-lg shadow-blue-500/20"
               />
             ) : (
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-sky-600 flex items-center justify-center font-bold text-2xl text-white shadow-lg shadow-indigo-600/20">
@@ -226,44 +228,44 @@ export const TeacherDashboard: React.FC = () => {
               className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-[#0e1738] flex items-center justify-center"
               title="Verified Faculty Supervisor"
             >
-              <Check className="w-3 h-3 text-white" />
+              <Check className="w-3 h-3 text-slate-900" />
             </span>
           </div>
 
           {/* Faculty Details Grid */}
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-xl font-bold text-white tracking-tight">
-                {currentUser?.name || 'Dr. Arvind Kulkarni'}
+              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+                {currentUser?.name || 'Dr Girish S C'}
               </h1>
-              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30 inline-flex items-center gap-1">
-                <BadgeCheck className="w-3.5 h-3.5 text-sky-400" />
+              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 inline-flex items-center gap-1">
+                <BadgeCheck className="w-3.5 h-3.5 text-blue-600" />
                 Faculty ID: {currentUser?.employeeCode || 'TCH-ISE-012'}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-slate-300">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-xs text-slate-700">
               <div className="flex items-center gap-1.5">
-                <GraduationCap className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                <GraduationCap className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 <span>
-                  <strong className="text-slate-400 font-normal">Designation:</strong>{' '}
+                  <strong className="text-slate-600 font-normal">Designation:</strong>{' '}
                   {currentUser?.designation || 'Associate Professor & Lab In-Charge'}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Building2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 <span>
-                  <strong className="text-slate-400 font-normal">Department:</strong>{' '}
+                  <strong className="text-slate-600 font-normal">Department:</strong>{' '}
                   {currentUser?.department || COLLEGE_CONFIG.department}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="font-mono text-[11px] text-sky-300">
-                  {currentUser?.email || 'arvind.kulkarni@gsss.edu.in'}
+                <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="font-mono text-[11px] text-blue-700">
+                  {currentUser?.email || 'girish.sc@gsss.edu.in'}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-slate-400">
+              <div className="flex items-center gap-1.5 text-slate-600">
                 <span className="truncate">{COLLEGE_CONFIG.name}</span>
               </div>
             </div>
@@ -274,54 +276,64 @@ export const TeacherDashboard: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             onClick={() => setActiveNavTab('student_monitoring')}
-            className="py-2 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm"
+            className="py-2 px-3.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm"
           >
             <Activity className="w-4 h-4" />
             <span>Full Live Monitor</span>
           </button>
           <button
             onClick={() => setActiveNavTab('quizzes')}
-            className="py-2 px-3.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors flex items-center gap-1.5 border border-slate-700"
+            className="py-2 px-3.5 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-800 text-xs font-semibold transition-colors flex items-center gap-1.5 border border-blue-200"
           >
-            <ClipboardList className="w-4 h-4 text-sky-400" />
+            <ClipboardList className="w-4 h-4 text-blue-600" />
             <span>Quizzes ({quizzes.length})</span>
           </button>
           <button
             onClick={() => setActiveNavTab('academic_integrity')}
-            className="py-2 px-3.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors flex items-center gap-1.5 border border-slate-700"
+            className="py-2 px-3.5 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-800 text-xs font-semibold transition-colors flex items-center gap-1.5 border border-blue-200"
           >
-            <ShieldAlert className="w-4 h-4 text-rose-400" />
+            <ShieldAlert className="w-4 h-4 text-rose-600" />
             <span>Integrity ({pendingIntegrityCount})</span>
           </button>
+          {makeupRequests.filter((r) => r.status === 'Pending').length > 0 && (
+            <button
+              onClick={() => setActiveNavTab('lab_sessions')}
+              className="py-1.5 px-3 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-300 text-xs font-semibold text-blue-800 flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>
+                Makeup Requests ({makeupRequests.filter((r) => r.status === 'Pending').length})
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* 2. ONE ACTIVE BATCH AT A TIME — LIVE LAB SESSION CONTROLLER */}
-      <div className="bg-[#0e1738] border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="bg-white border border-blue-100 rounded-2xl p-5 shadow-xl space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-blue-100 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
               <Clock className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider font-mono">
                 Lab Session Control (One Active Batch at a Time)
               </h2>
-              <p className="text-xs text-slate-400">
-                Only one semester &amp; batch can execute programs concurrently (supports 20+ simultaneous students). Default duration: 120 minutes.
+              <p className="text-xs text-slate-600">
+                Only one semester &amp; batch can execute programs concurrently. Default duration: 120 minutes.
               </p>
             </div>
           </div>
 
           {activeBatchSession ? (
-            <div className="flex items-center gap-3 bg-emerald-950/60 border border-emerald-500/40 px-4 py-2 rounded-xl">
+            <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-300 px-4 py-2 rounded-xl">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
               <div className="font-mono text-xs">
-                <div className="font-bold text-emerald-300">
+                <div className="font-bold text-emerald-700">
                   ACTIVE: Semester {activeBatchSession.semesterNumber} · {activeBatchSession.batch}
                 </div>
-                <div className="text-[11px] text-slate-300">
-                  Remaining: <strong className="text-white">{formatCountdown(sessionRemainingSeconds)}</strong> / {activeBatchSession.durationMinutes || 120}m
+                <div className="text-[11px] text-slate-700">
+                  Remaining: <strong className="text-slate-900">{formatCountdown(sessionRemainingSeconds)}</strong> / {activeBatchSession.durationMinutes || 120}m
                 </div>
               </div>
               <button
@@ -333,7 +345,7 @@ export const TeacherDashboard: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono text-amber-300 flex items-center gap-2">
+            <div className="px-3 py-1.5 rounded-xl bg-blue-50/60 border border-blue-200 text-xs font-mono text-amber-700 flex items-center gap-2">
               <Lock className="w-3.5 h-3.5" />
               <span>No Batch Active — All Student Execution Paused</span>
             </div>
@@ -344,8 +356,8 @@ export const TeacherDashboard: React.FC = () => {
           <div
             className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
               sessionFeedback.type === 'success'
-                ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300'
-                : 'bg-rose-950/60 border-rose-500/40 text-rose-300'
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                : 'bg-rose-50 border-rose-300 text-rose-700'
             }`}
           >
             {sessionFeedback.type === 'success' ? (
@@ -358,15 +370,15 @@ export const TeacherDashboard: React.FC = () => {
         )}
 
         {/* Start Lab Session Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end bg-slate-950/60 border border-slate-800 rounded-xl p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end bg-blue-50/60 border border-blue-100 rounded-xl p-4">
           <div>
-            <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">
+            <label className="text-[10px] font-mono uppercase text-slate-600 block mb-1">
               Target Semester
             </label>
             <select
               value={selectedSemester}
               onChange={(e) => setSelectedSemester(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-100 focus:outline-hidden focus:border-sky-500"
+              className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-xs font-mono text-slate-900 focus:outline-hidden focus:border-blue-500"
             >
               {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
                 <option key={sem} value={sem}>
@@ -377,22 +389,28 @@ export const TeacherDashboard: React.FC = () => {
           </div>
 
           <div>
-            <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">
+            <label className="text-[10px] font-mono uppercase text-slate-600 block mb-1">
               Target Batch
             </label>
             <select
               value={selectedBatch}
               onChange={(e) => setSelectedBatch(e.target.value as BatchName)}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-100 focus:outline-hidden focus:border-sky-500"
+              className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-xs font-mono text-slate-900 focus:outline-hidden focus:border-blue-500"
             >
-              <option value="Batch A">Batch A (20 Students)</option>
-              <option value="Batch B">Batch B (20 Students)</option>
-              <option value="Batch C">Batch C (20 Students)</option>
+              <option value="Batch A">
+                Batch A ({semesterStudents.filter((s) => s.batch === 'Batch A').length} Students)
+              </option>
+              <option value="Batch B">
+                Batch B ({semesterStudents.filter((s) => s.batch === 'Batch B').length} Students)
+              </option>
+              <option value="Batch C">
+                Batch C ({semesterStudents.filter((s) => s.batch === 'Batch C').length} Students)
+              </option>
             </select>
           </div>
 
           <div>
-            <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">
+            <label className="text-[10px] font-mono uppercase text-slate-600 block mb-1">
               Duration (Minutes)
             </label>
             <input
@@ -401,18 +419,18 @@ export const TeacherDashboard: React.FC = () => {
               max={240}
               value={sessionDurationInput}
               onChange={(e) => setSessionDurationInput(Math.max(15, Number(e.target.value)))}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono text-slate-100 focus:outline-hidden focus:border-sky-500"
+              className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-xs font-mono text-slate-900 focus:outline-hidden focus:border-blue-500"
             />
           </div>
 
           <div>
-            <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">
+            <label className="text-[10px] font-mono uppercase text-slate-600 block mb-1">
               Lab Experiment
             </label>
             <select
               value={selectedExpId}
               onChange={(e) => setSelectedExpId(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-100 focus:outline-hidden focus:border-sky-500"
+              className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-xs text-slate-900 focus:outline-hidden focus:border-blue-500"
             >
               {experiments.map((exp) => (
                 <option key={exp.id} value={exp.id}>
@@ -434,8 +452,8 @@ export const TeacherDashboard: React.FC = () => {
               }
               className={`w-full py-2 px-4 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                 activeBatchSession
-                  ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
-                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20'
+                  ? 'bg-blue-100 text-slate-500 border border-blue-200 cursor-not-allowed'
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-blue-600/20'
               }`}
             >
               <Play className="w-3.5 h-3.5 fill-current" />
@@ -449,18 +467,18 @@ export const TeacherDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. SEMESTER SELECTION (1-8) & BATCH MANAGEMENT (A / B / C, >= 20 STUDENTS EACH) */}
-      <div className="bg-[#0e1738] border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      {/* 3. SEMESTER SELECTION (1-8) & BATCH MANAGEMENT (A / B / C) */}
+      <div className="bg-white border border-blue-100 rounded-2xl p-5 space-y-4 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-100 pb-3">
           <div className="flex items-center gap-2">
-            <Layers className="w-5 h-5 text-sky-400" />
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+            <Layers className="w-5 h-5 text-blue-600" />
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider font-mono">
               Semester Selection &amp; Batch Roster ({semesterStudents.length} Students in Sem {selectedSemester})
             </h2>
           </div>
-          <span className="text-xs text-slate-400 font-mono">
-            {progression.yearOfStudy} · <strong className="text-sky-300">{progression.admissionBatchLabel}</strong> · USN Prefix:{' '}
-            <strong className="text-emerald-400">{progression.usnPrefix}XXX</strong>
+          <span className="text-xs text-slate-600 font-mono">
+            {progression.yearOfStudy} · <strong className="text-blue-700">{progression.admissionBatchLabel}</strong> · USN Prefix:{' '}
+            <strong className="text-emerald-600">{progression.usnPrefix}XXX</strong>
           </span>
         </div>
 
@@ -477,8 +495,8 @@ export const TeacherDashboard: React.FC = () => {
                 onClick={() => setSelectedSemester(sem)}
                 className={`py-2 px-2 rounded-xl text-xs font-semibold flex flex-col items-center justify-center transition-all border relative ${
                   isSelected
-                    ? 'bg-sky-600 text-white border-sky-400 shadow-md shadow-sky-600/30 ring-2 ring-sky-400/20'
-                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                    ? 'bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-600/20 ring-2 ring-blue-500/20'
+                    : 'bg-blue-50/60 text-slate-600 border-blue-100 hover:border-blue-200 hover:text-slate-800'
                 }`}
               >
                 {isActiveSem && (
@@ -488,7 +506,7 @@ export const TeacherDashboard: React.FC = () => {
                   />
                 )}
                 <span className="font-bold text-sm">Sem {sem}</span>
-                <span className={`text-[10px] font-mono mt-0.5 ${isSelected ? 'text-sky-100' : 'text-slate-500'}`}>
+                <span className={`text-[10px] font-mono mt-0.5 ${isSelected ? 'text-blue-100' : 'text-slate-500'}`}>
                   &apos;{String(semAdmYear).slice(-2)} Batch
                 </span>
               </button>
@@ -513,8 +531,8 @@ export const TeacherDashboard: React.FC = () => {
                   onClick={() => setSelectedBatch(batch)}
                   className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all border flex items-center justify-between ${
                     isSelected
-                      ? 'bg-indigo-600/25 text-white border-indigo-400 shadow-sm'
-                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                      ? 'bg-blue-50 text-blue-900 border-blue-400 shadow-sm'
+                      : 'bg-blue-50/60 text-slate-600 border-blue-100 hover:text-slate-800'
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -523,7 +541,7 @@ export const TeacherDashboard: React.FC = () => {
                   </div>
                   <span
                     className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
-                      isSelected ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-300'
+                      isSelected ? 'bg-blue-500 text-white' : 'bg-blue-100 text-slate-700'
                     }`}
                   >
                     {count} Students
@@ -540,16 +558,16 @@ export const TeacherDashboard: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`Search Sem ${selectedSemester} ${selectedBatch}...`}
-              className="w-full pl-8 pr-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200 focus:outline-hidden focus:border-sky-500 font-mono"
+              className="w-full pl-8 pr-3 py-2 rounded-xl bg-blue-50/60 border border-blue-200 text-xs text-slate-800 focus:outline-hidden focus:border-blue-500 font-mono"
             />
           </div>
         </div>
 
         {/* Batch Student Roster Table (Names & USNs for Selected Semester & Batch) */}
-        <div className="overflow-x-auto max-h-72 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/60">
+        <div className="overflow-x-auto max-h-72 overflow-y-auto rounded-xl border border-blue-100 bg-blue-50/60">
           <table className="w-full text-xs text-left">
             <thead className="sticky top-0 z-10">
-              <tr className="border-b border-slate-800 text-slate-400 font-semibold text-[10px] uppercase font-mono bg-[#090f22]">
+              <tr className="border-b border-blue-100 text-slate-600 font-semibold text-[10px] uppercase font-mono bg-[#f4f8ff]">
                 <th className="py-2.5 px-4">#</th>
                 <th className="py-2.5 px-4">Student Name</th>
                 <th className="py-2.5 px-4">Permanent USN</th>
@@ -558,50 +576,60 @@ export const TeacherDashboard: React.FC = () => {
                 <th className="py-2.5 px-4 text-right">Enrollment</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
-              {filteredRoster.map((student, idx) => (
-                <tr key={student.id} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="py-2 px-4 text-slate-500">{idx + 1}</td>
-                  <td className="py-2 px-4 font-sans font-semibold text-slate-200 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-sky-400">
-                      {student.name.charAt(0)}
-                    </div>
-                    <span>{student.name}</span>
-                  </td>
-                  <td className="py-2 px-4 text-emerald-400 font-bold">{student.usn}</td>
-                  <td className="py-2 px-4 text-slate-400">{student.email}</td>
-                  <td className="py-2 px-4 text-sky-400 font-bold">
-                    Sem {selectedSemester} · {student.batch}
-                  </td>
-                  <td className="py-2 px-4 text-right">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
-                      <Check className="w-3 h-3" /> Enrolled
-                    </span>
+            <tbody className="divide-y divide-blue-100 font-mono text-[11px]">
+              {filteredRoster.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 px-4 text-center font-sans text-xs text-slate-500">
+                    {batchStudents.length === 0
+                      ? `No students registered for Semester ${selectedSemester} ${selectedBatch} yet. Registered students will appear here automatically.`
+                      : `No students in Semester ${selectedSemester} ${selectedBatch} match "${searchQuery}".`}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredRoster.map((student, idx) => (
+                  <tr key={student.id} className="hover:bg-[#f4f8ff] transition-colors">
+                    <td className="py-2 px-4 text-slate-500">{idx + 1}</td>
+                    <td className="py-2 px-4 font-sans font-semibold text-slate-800 flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-[10px] font-bold text-blue-600">
+                        {student.name.charAt(0)}
+                      </div>
+                      <span>{student.name}</span>
+                    </td>
+                    <td className="py-2 px-4 text-emerald-600 font-bold">{student.usn}</td>
+                    <td className="py-2 px-4 text-slate-600">{student.email}</td>
+                    <td className="py-2 px-4 text-blue-600 font-bold">
+                      Sem {selectedSemester} · {student.batch}
+                    </td>
+                    <td className="py-2 px-4 text-right">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                        <Check className="w-3 h-3" /> Enrolled
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
       {/* 4. INDIVIDUAL STUDENT LIVE ACTIVITY MONITORING (EXACT STUDENTS BY STATUS CARD & TABS) */}
-      <div className="bg-[#0e1738] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-xl space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-100 pb-3">
           <div>
             <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-emerald-400 animate-pulse" />
-              <h2 className="text-base font-bold text-white">
+              <Activity className="w-5 h-5 text-emerald-600 animate-pulse" />
+              <h2 className="text-base font-bold text-slate-900">
                 Individual Student Live Activity — Semester {selectedSemester} {selectedBatch}
               </h2>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-600 mt-0.5">
               Showing exact student names and USNs performing each live activity ({liveBatchMonitorList.length} students tracked)
             </p>
           </div>
           <button
             onClick={() => setActiveNavTab('student_monitoring')}
-            className="text-xs text-sky-400 hover:text-sky-300 font-medium flex items-center gap-1 self-start sm:self-auto"
+            className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 self-start sm:self-auto"
           >
             <span>Open Full Evaluation &amp; Grading Console</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -611,20 +639,20 @@ export const TeacherDashboard: React.FC = () => {
         {/* Separate Status Cards Showing Exact Students in Typing (Green), Compiling (Orange), Idle (Yellow) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* TYPING – GREEN */}
-          <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/15 p-4 space-y-3">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                <Terminal className="w-4 h-4 text-emerald-400" />
-                <span className="text-xs font-bold text-emerald-300 uppercase font-mono">
+                <Terminal className="w-4 h-4 text-emerald-600" />
+                <span className="text-xs font-bold text-emerald-700 uppercase font-mono">
                   Typing – Green
                 </span>
               </div>
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">
                 {typingStudents.length} Students
               </span>
             </div>
-            <p className="text-[11px] text-emerald-200/70">
+            <p className="text-[11px] text-emerald-700">
               Actively writing or editing code in the Monaco editor
             </p>
             <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
@@ -634,10 +662,10 @@ export const TeacherDashboard: React.FC = () => {
                 typingStudents.map((st) => (
                   <div
                     key={st.id}
-                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-900/80 border border-emerald-500/20 text-xs"
+                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#f4f8ff] border border-emerald-500/20 text-xs"
                   >
-                    <span className="font-semibold text-slate-100 truncate">{st.studentName}</span>
-                    <span className="font-mono text-[10px] text-emerald-400 shrink-0 ml-2">
+                    <span className="font-semibold text-slate-900 truncate">{st.studentName}</span>
+                    <span className="font-mono text-[10px] text-emerald-600 shrink-0 ml-2">
                       {st.usn}
                     </span>
                   </div>
@@ -647,20 +675,20 @@ export const TeacherDashboard: React.FC = () => {
           </div>
 
           {/* COMPILING – ORANGE */}
-          <div className="rounded-xl border border-orange-500/30 bg-orange-950/15 p-4 space-y-3">
+          <div className="rounded-xl border border-orange-500/30 bg-orange-50 p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-orange-500/20 pb-2">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-orange-400 animate-ping" />
-                <Cpu className="w-4 h-4 text-orange-400" />
-                <span className="text-xs font-bold text-orange-300 uppercase font-mono">
+                <Cpu className="w-4 h-4 text-orange-600" />
+                <span className="text-xs font-bold text-orange-700 uppercase font-mono">
                   Compiling – Orange
                 </span>
               </div>
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-orange-500/20 text-orange-300">
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-700">
                 {compilingStudents.length} Students
               </span>
             </div>
-            <p className="text-[11px] text-orange-200/70">
+            <p className="text-[11px] text-orange-700">
               Currently executing or compiling programs concurrently
             </p>
             <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
@@ -670,10 +698,10 @@ export const TeacherDashboard: React.FC = () => {
                 compilingStudents.map((st) => (
                   <div
                     key={st.id}
-                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-900/80 border border-orange-500/20 text-xs"
+                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#f4f8ff] border border-orange-500/20 text-xs"
                   >
-                    <span className="font-semibold text-slate-100 truncate">{st.studentName}</span>
-                    <span className="font-mono text-[10px] text-orange-400 shrink-0 ml-2">
+                    <span className="font-semibold text-slate-900 truncate">{st.studentName}</span>
+                    <span className="font-mono text-[10px] text-orange-600 shrink-0 ml-2">
                       {st.usn}
                     </span>
                   </div>
@@ -683,21 +711,21 @@ export const TeacherDashboard: React.FC = () => {
           </div>
 
           {/* IDLE – YELLOW */}
-          <div className="rounded-xl border border-amber-500/30 bg-amber-950/15 p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
+          <div className="rounded-xl border border-amber-200 bg-amber-50/15 p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-amber-200 pb-2">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                <PauseCircle className="w-4 h-4 text-amber-400" />
-                <span className="text-xs font-bold text-amber-300 uppercase font-mono">
+                <PauseCircle className="w-4 h-4 text-amber-600" />
+                <span className="text-xs font-bold text-amber-700 uppercase font-mono">
                   Idle – Yellow
                 </span>
               </div>
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-700">
                 {idleStudents.length} Students
               </span>
             </div>
-            <p className="text-[11px] text-amber-200/70">
-              Logged in with no editor interaction for 2+ minutes
+            <p className="text-[11px] text-amber-900/70">
+              No code editor interaction for 3+ seconds
             </p>
             <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
               {idleStudents.length === 0 ? (
@@ -706,10 +734,10 @@ export const TeacherDashboard: React.FC = () => {
                 idleStudents.map((st) => (
                   <div
                     key={st.id}
-                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-slate-900/80 border border-amber-500/20 text-xs"
+                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#f4f8ff] border border-amber-200 text-xs"
                   >
-                    <span className="font-semibold text-slate-100 truncate">{st.studentName}</span>
-                    <span className="font-mono text-[10px] text-amber-400 shrink-0 ml-2">
+                    <span className="font-semibold text-slate-900 truncate">{st.studentName}</span>
+                    <span className="font-mono text-[10px] text-amber-600 shrink-0 ml-2">
                       {st.usn}
                     </span>
                   </div>
@@ -724,12 +752,12 @@ export const TeacherDashboard: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             {(
               [
-                { id: 'all', label: `All Batch Students (${liveBatchMonitorList.length})`, color: 'bg-sky-600 text-white' },
+                { id: 'all', label: `All Batch Students (${liveBatchMonitorList.length})`, color: 'bg-blue-600 text-white' },
                 { id: 'Typing', label: `Typing – Green (${typingStudents.length})`, color: 'bg-emerald-600 text-white' },
                 { id: 'Compiling', label: `Compiling – Orange (${compilingStudents.length})`, color: 'bg-orange-600 text-white' },
                 { id: 'Idle', label: `Idle – Yellow (${idleStudents.length})`, color: 'bg-amber-600 text-white' },
-                { id: 'Viewing', label: `Viewing (${viewingStudents.length})`, color: 'bg-sky-600 text-white' },
-                { id: 'Submitted', label: `Submitted (${submittedStudents.length})`, color: 'bg-purple-600 text-white' },
+                { id: 'Viewing', label: `Viewing (${viewingStudents.length})`, color: 'bg-blue-600 text-white' },
+                { id: 'Submitted', label: `Submitted (${submittedStudents.length})`, color: 'bg-blue-600 text-white' },
                 ...(absentStudents.length > 0
                   ? [{ id: 'Absent', label: `Offline (${absentStudents.length})`, color: 'bg-rose-600 text-white' }]
                   : []),
@@ -741,7 +769,7 @@ export const TeacherDashboard: React.FC = () => {
                 className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all border ${
                   activeStatusTab === tab.id
                     ? `${tab.color} border-transparent shadow-sm`
-                    : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                    : 'bg-blue-50/60 text-slate-600 border-blue-100 hover:text-slate-800'
                 }`}
               >
                 {tab.label}
@@ -749,10 +777,10 @@ export const TeacherDashboard: React.FC = () => {
             ))}
           </div>
 
-          <div className="overflow-x-auto max-h-80 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/60">
+          <div className="overflow-x-auto max-h-80 overflow-y-auto rounded-xl border border-blue-100 bg-blue-50/60">
             <table className="w-full text-xs text-left">
-              <thead className="sticky top-0 bg-[#090f22] z-10">
-                <tr className="border-b border-slate-800 text-slate-400 font-semibold text-[10px] uppercase font-mono">
+              <thead className="sticky top-0 bg-[#f4f8ff] z-10">
+                <tr className="border-b border-blue-100 text-slate-600 font-semibold text-[10px] uppercase font-mono">
                   <th className="py-2.5 px-4">Student Name</th>
                   <th className="py-2.5 px-4">USN</th>
                   <th className="py-2.5 px-4">Batch</th>
@@ -762,46 +790,56 @@ export const TeacherDashboard: React.FC = () => {
                   <th className="py-2.5 px-4 text-right">Compiles</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
-                {tabFilteredMonitor.map((ses) => (
-                  <tr key={ses.id} className="hover:bg-slate-900/50">
-                    <td className="py-2.5 px-4 font-sans font-semibold text-slate-200">
-                      {ses.studentName}
-                    </td>
-                    <td className="py-2.5 px-4 text-slate-400">{ses.usn}</td>
-                    <td className="py-2.5 px-4 text-sky-400 font-bold">
-                      Sem {ses.semesterNumber} · {ses.batch}
-                    </td>
-                    <td className="py-2.5 px-4">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded font-mono text-[10px] uppercase font-bold border ${
-                          ses.activityStatus === 'Typing'
-                            ? 'bg-emerald-950 text-emerald-400 border-emerald-500/30'
-                            : ses.activityStatus === 'Compiling'
-                            ? 'bg-orange-950 text-orange-400 border-orange-500/30'
-                            : ses.activityStatus === 'Idle'
-                            ? 'bg-amber-950 text-amber-400 border-amber-500/30'
-                            : ses.activityStatus === 'Viewing'
-                            ? 'bg-sky-950 text-sky-400 border-sky-500/30'
-                            : ses.activityStatus === 'Absent'
-                            ? 'bg-rose-950 text-rose-400 border-rose-500/30'
-                            : 'bg-purple-950 text-purple-300 border-purple-500/30'
-                        }`}
-                      >
-                        {ses.activityStatus}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-4 text-right font-semibold text-emerald-400 tabular-nums">
-                      {Math.floor(ses.activeTimeSeconds / 60)}m {ses.activeTimeSeconds % 60}s
-                    </td>
-                    <td className="py-2.5 px-4 text-right text-amber-400 tabular-nums">
-                      {Math.floor(ses.idleTimeSeconds / 60)}m
-                    </td>
-                    <td className="py-2.5 px-4 text-right text-slate-300 tabular-nums">
-                      {ses.compilationAttempts}
+              <tbody className="divide-y divide-blue-100 font-mono text-[11px]">
+                {tabFilteredMonitor.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 px-4 text-center font-sans text-xs text-slate-500">
+                      {liveBatchMonitorList.length === 0
+                        ? `No registered students to monitor in Semester ${selectedSemester} ${selectedBatch} yet.`
+                        : `No students match the "${activeStatusTab}" status filter.`}
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  tabFilteredMonitor.map((ses) => (
+                    <tr key={ses.id} className="hover:bg-[#f4f8ff]">
+                      <td className="py-2.5 px-4 font-sans font-semibold text-slate-800">
+                        {ses.studentName}
+                      </td>
+                      <td className="py-2.5 px-4 text-slate-600">{ses.usn}</td>
+                      <td className="py-2.5 px-4 text-blue-600 font-bold">
+                        Sem {ses.semesterNumber} · {ses.batch}
+                      </td>
+                      <td className="py-2.5 px-4">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded font-mono text-[10px] uppercase font-bold border ${
+                            ses.activityStatus === 'Typing'
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                              : ses.activityStatus === 'Compiling'
+                              ? 'bg-orange-50 text-orange-600 border-orange-500/30'
+                              : ses.activityStatus === 'Idle'
+                              ? 'bg-amber-50 text-amber-600 border-amber-200'
+                              : ses.activityStatus === 'Viewing'
+                              ? 'bg-blue-50 text-blue-600 border-blue-200'
+                              : ses.activityStatus === 'Absent'
+                              ? 'bg-rose-50 text-rose-600 border-rose-200'
+                              : 'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}
+                        >
+                          {ses.activityStatus}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-4 text-right font-semibold text-emerald-600 tabular-nums">
+                        {Math.floor(ses.activeTimeSeconds / 60)}m {ses.activeTimeSeconds % 60}s
+                      </td>
+                      <td className="py-2.5 px-4 text-right text-amber-600 tabular-nums">
+                        {Math.floor(ses.idleTimeSeconds / 60)}m
+                      </td>
+                      <td className="py-2.5 px-4 text-right text-slate-700 tabular-nums">
+                        {ses.compilationAttempts}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -810,144 +848,166 @@ export const TeacherDashboard: React.FC = () => {
 
       {/* 5 Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-2 shadow-sm">
-          <div className="flex items-center justify-between text-slate-400">
+        <div className="bg-white border border-blue-100 rounded-xl p-5 space-y-2 shadow-sm">
+          <div className="flex items-center justify-between text-slate-600">
             <span className="text-xs font-medium">Total Enrolled</span>
-            <Users className="w-4 h-4 text-sky-400" />
+            <Users className="w-4 h-4 text-blue-600" />
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold text-white font-mono tabular-nums">
+            <span className="text-3xl font-bold text-slate-900 font-mono tabular-nums">
               {allStudents.length}
             </span>
-            <span className="text-xs text-slate-400">20 / Batch</span>
+            <span className="text-xs text-slate-600">Registered</span>
           </div>
         </div>
 
-        <div className="bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-2 shadow-sm">
-          <div className="flex items-center justify-between text-slate-400">
+        <div className="bg-white border border-blue-100 rounded-xl p-5 space-y-2 shadow-sm">
+          <div className="flex items-center justify-between text-slate-600">
             <span className="text-xs font-medium">Active Terminals</span>
-            <Activity className="w-4 h-4 text-emerald-400" />
+            <Activity className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold text-emerald-400 font-mono tabular-nums">
+            <span className="text-3xl font-bold text-emerald-600 font-mono tabular-nums">
               {activeStudentsCount}
             </span>
-            <span className="text-xs text-slate-400">Live Now</span>
+            <span className="text-xs text-slate-600">Live Now</span>
           </div>
         </div>
 
-        <div className="bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-2 shadow-sm">
-          <div className="flex items-center justify-between text-slate-400">
+        <div className="bg-white border border-blue-100 rounded-xl p-5 space-y-2 shadow-sm">
+          <div className="flex items-center justify-between text-slate-600">
             <span className="text-xs font-medium">Active Batch</span>
-            <CalendarCheck2 className="w-4 h-4 text-indigo-400" />
+            <CalendarCheck2 className="w-4 h-4 text-blue-600" />
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-xl font-bold text-white font-mono">
+            <span className="text-xl font-bold text-slate-900 font-mono">
               {activeBatchSession
                 ? `S${activeBatchSession.semesterNumber} ${activeBatchSession.batch.replace('Batch ', '')}`
                 : 'None'}
             </span>
-            <span className="text-xs text-slate-400">1 Max</span>
+            <span className="text-xs text-slate-600">1 Max</span>
           </div>
         </div>
 
-        <div className="bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-2 shadow-sm">
-          <div className="flex items-center justify-between text-slate-400">
+        <div className="bg-white border border-blue-100 rounded-xl p-5 space-y-2 shadow-sm">
+          <div className="flex items-center justify-between text-slate-600">
             <span className="text-xs font-medium">Completed Labs</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold text-white font-mono tabular-nums">
+            <span className="text-3xl font-bold text-slate-900 font-mono tabular-nums">
               {completedSessionsCount}
             </span>
-            <span className="text-xs text-slate-400">Evaluated</span>
+            <span className="text-xs text-slate-600">Evaluated</span>
           </div>
         </div>
 
-        <div className="bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-2 shadow-sm">
-          <div className="flex items-center justify-between text-slate-400">
+        <div className="bg-white border border-blue-100 rounded-xl p-5 space-y-2 shadow-sm">
+          <div className="flex items-center justify-between text-slate-600">
             <span className="text-xs font-medium">Curriculum Labs</span>
-            <BookOpen className="w-4 h-4 text-amber-400" />
+            <BookOpen className="w-4 h-4 text-amber-600" />
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-bold text-white font-mono tabular-nums">
+            <span className="text-3xl font-bold text-slate-900 font-mono tabular-nums">
               {experiments.length}
             </span>
-            <span className="text-xs text-slate-400">Experiments</span>
+            <span className="text-xs text-slate-600">Experiments</span>
           </div>
         </div>
       </div>
 
       {/* Bottom Analytics Grid: Typing Focus Chart + Security/Integrity Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7 bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-3">
-          <h2 className="text-sm font-bold text-white">
+        <div className="lg:col-span-7 bg-white border border-blue-100 rounded-xl p-5 space-y-3">
+          <h2 className="text-sm font-bold text-slate-900">
             Student Typing Focus (Minutes) — Sem {selectedSemester} {selectedBatch}
           </h2>
-          <p className="text-xs text-slate-400">Comparing active editor typing against idle intervals</p>
+          <p className="text-xs text-slate-600">Comparing active editor typing against idle intervals</p>
 
-          <div className="h-56 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
-                <YAxis stroke="#64748b" fontSize={10} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#090f22', borderColor: '#334155', fontSize: '11px' }}
-                />
-                <Bar dataKey="active" name="Active (min)" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="idle" name="Idle (min)" fill="#64748b" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {chartData.length === 0 ? (
+            <div className="h-56 w-full flex flex-col items-center justify-center rounded-lg border border-dashed border-blue-200 bg-blue-50/40 text-center px-4">
+              <Activity className="w-7 h-7 text-blue-300 mb-2" />
+              <p className="text-xs font-medium text-slate-600">No student activity data yet</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Typing vs. idle metrics will appear once registered students join a lab session.
+              </p>
+            </div>
+          ) : (
+            <div className="h-56 w-full pt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#dbeafe" />
+                  <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
+                  <YAxis stroke="#64748b" fontSize={10} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#cbd5e1', fontSize: '11px' }}
+                  />
+                  <Bar dataKey="active" name="Active (min)" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="idle" name="Idle (min)" fill="#64748b" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
-        <div className="lg:col-span-5 bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-3">
+        <div className="lg:col-span-5 bg-white border border-blue-100 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-amber-400">
+            <div className="flex items-center gap-2 text-amber-600">
               <ShieldAlert className="w-4 h-4" />
-              <h3 className="text-sm font-bold text-white">Security &amp; Academic Integrity Alerts</h3>
+              <h3 className="text-sm font-bold text-slate-900">Security &amp; Academic Integrity Alerts</h3>
             </div>
             <button
               onClick={() => setActiveNavTab('academic_integrity')}
-              className="font-mono text-xs text-sky-400 hover:underline"
+              className="font-mono text-xs text-blue-600 hover:underline"
             >
               {integrityAlerts.length} flags
             </button>
           </div>
 
           <div className="space-y-2">
-            {integrityAlerts.slice(0, 2).map((alert) => (
-              <div
-                key={alert.id}
-                onClick={() => setActiveNavTab('academic_integrity')}
-                className="p-2.5 rounded-lg bg-slate-900 border border-rose-500/30 hover:border-rose-400/60 cursor-pointer text-xs space-y-1 transition-colors"
-              >
-                <div className="flex items-center justify-between font-semibold text-slate-200">
-                  <span>{alert.studentName} ({alert.usn})</span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-500/30">
-                    {alert.riskLevel} Risk · {alert.similarityScore}%
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400">
-                  {alert.linesPasted} lines pasted in {alert.assignmentName}
+            {integrityAlerts.length === 0 && clipboardEvents.length === 0 ? (
+              <div className="p-6 rounded-lg border border-dashed border-blue-200 bg-blue-50/40 text-center space-y-1">
+                <CheckCircle2 className="w-6 h-6 text-emerald-500 mx-auto" />
+                <p className="text-xs font-medium text-slate-700">No integrity flags or clipboard alerts</p>
+                <p className="text-[11px] text-slate-500">
+                  Copy/paste alerts from active student lab sessions will appear here.
                 </p>
               </div>
-            ))}
-            {clipboardEvents.slice(0, 1).map((evt) => (
-              <div
-                key={evt.id}
-                className="p-2.5 rounded-lg bg-slate-900 border border-amber-500/30 text-xs space-y-1"
-              >
-                <div className="flex items-center justify-between font-semibold text-slate-200">
-                  <span>{evt.studentName} ({evt.usn})</span>
-                  <span className="text-[10px] font-mono text-slate-400">
-                    {new Date(evt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400">{evt.details}</p>
-              </div>
-            ))}
+            ) : (
+              <>
+                {integrityAlerts.slice(0, 2).map((alert) => (
+                  <div
+                    key={alert.id}
+                    onClick={() => setActiveNavTab('academic_integrity')}
+                    className="p-2.5 rounded-lg bg-blue-50/60 border border-rose-200 hover:border-rose-400/60 cursor-pointer text-xs space-y-1 transition-colors"
+                  >
+                    <div className="flex items-center justify-between font-semibold text-slate-800">
+                      <span>{alert.studentName} ({alert.usn})</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
+                        {alert.riskLevel} Risk · {alert.similarityScore}%
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600">
+                      {alert.linesPasted} lines pasted in {alert.assignmentName}
+                    </p>
+                  </div>
+                ))}
+                {clipboardEvents.slice(0, 1).map((evt) => (
+                  <div
+                    key={evt.id}
+                    className="p-2.5 rounded-lg bg-blue-50/60 border border-amber-200 text-xs space-y-1"
+                  >
+                    <div className="flex items-center justify-between font-semibold text-slate-800">
+                      <span>{evt.studentName} ({evt.usn})</span>
+                      <span className="text-[10px] font-mono text-slate-600">
+                        {new Date(evt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600">{evt.details}</p>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </div>

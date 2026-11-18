@@ -133,19 +133,19 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-white tracking-tight">
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">
                   Academic Integrity & Copy-Paste Detection
                 </h1>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-500/30">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">
                   AST & Structure Engine
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600">
                 {COLLEGE_CONFIG.name} · Department of {COLLEGE_CONFIG.department}
               </p>
             </div>
@@ -155,9 +155,9 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <button
             onClick={exportAlertsCSV}
-            className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-2 shadow-xs"
+            className="px-3.5 py-2 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-800 text-xs font-semibold border border-blue-200 transition-colors flex items-center gap-2 shadow-xs"
           >
-            <Download className="w-4 h-4 text-sky-400" />
+            <Download className="w-4 h-4 text-blue-600" />
             <span>Download CSV Audit Log</span>
           </button>
         </div>
@@ -165,85 +165,85 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
 
       {/* 5 KPI Metric Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        <div className="p-4 rounded-xl bg-[#0e1738] border border-slate-800 space-y-1">
-          <span className="text-slate-400 text-xs block font-medium">Total Flagged Events</span>
+        <div className="p-4 rounded-xl bg-white border border-blue-100 space-y-1">
+          <span className="text-slate-600 text-xs block font-medium">Total Flagged Events</span>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-white tabular-nums">
+            <span className="text-2xl font-bold font-mono text-slate-900 tabular-nums">
               {totalAlerts}
             </span>
-            <span className="text-[10px] font-mono text-slate-400">Events</span>
+            <span className="text-[10px] font-mono text-slate-600">Events</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#0e1738] border border-slate-800 space-y-1">
-          <span className="text-slate-400 text-xs block font-medium">Students Flagged</span>
+        <div className="p-4 rounded-xl bg-white border border-blue-100 space-y-1">
+          <span className="text-slate-600 text-xs block font-medium">Students Flagged</span>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-sky-400 tabular-nums">
+            <span className="text-2xl font-bold font-mono text-blue-600 tabular-nums">
               {uniqueStudents}
             </span>
-            <span className="text-[10px] font-mono text-slate-400">Distinct USNs</span>
+            <span className="text-[10px] font-mono text-slate-600">Distinct USNs</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#0e1738] border border-slate-800 space-y-1">
-          <span className="text-slate-400 text-xs block font-medium">High Risk (&gt;75%)</span>
+        <div className="p-4 rounded-xl bg-white border border-blue-100 space-y-1">
+          <span className="text-slate-600 text-xs block font-medium">High Risk (&gt;75%)</span>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-rose-400 tabular-nums">
+            <span className="text-2xl font-bold font-mono text-rose-600 tabular-nums">
               {highRiskCount}
             </span>
-            <span className="text-[10px] font-mono text-rose-400">Attention Req.</span>
+            <span className="text-[10px] font-mono text-rose-600">Attention Req.</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#0e1738] border border-slate-800 space-y-1">
-          <span className="text-slate-400 text-xs block font-medium">Medium Risk (40-75%)</span>
+        <div className="p-4 rounded-xl bg-white border border-blue-100 space-y-1">
+          <span className="text-slate-600 text-xs block font-medium">Medium Risk (40-75%)</span>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-amber-400 tabular-nums">
+            <span className="text-2xl font-bold font-mono text-amber-600 tabular-nums">
               {mediumRiskCount}
             </span>
-            <span className="text-[10px] font-mono text-slate-400">Moderate Overlap</span>
+            <span className="text-[10px] font-mono text-slate-600">Moderate Overlap</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#0e1738] border border-slate-800 space-y-1">
-          <span className="text-slate-400 text-xs block font-medium">Reviewed / Dismissed</span>
+        <div className="p-4 rounded-xl bg-white border border-blue-100 space-y-1">
+          <span className="text-slate-600 text-xs block font-medium">Reviewed / Dismissed</span>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-emerald-400 tabular-nums">
+            <span className="text-2xl font-bold font-mono text-emerald-600 tabular-nums">
               {reviewedCount + dismissedCount}
             </span>
-            <span className="text-[10px] font-mono text-emerald-400">Resolved</span>
+            <span className="text-[10px] font-mono text-emerald-600">Resolved</span>
           </div>
         </div>
       </div>
 
       {/* Educational Constitution Callout */}
-      <div className="p-4 rounded-xl bg-[#0e1738] border border-slate-800/80 flex items-start gap-3 text-xs text-slate-300">
-        <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+      <div className="p-4 rounded-xl bg-white border border-blue-100 flex items-start gap-3 text-xs text-slate-700">
+        <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
         <p className="leading-relaxed">
           <strong>Faculty Advisory:</strong> Code similarity analysis is an educational diagnostic tool. A copy-paste event or high similarity score alone is not automatic proof of plagiarism. Faculty inspection of structural evidence and human decision-making are required before any academic decision or penalty is recorded.
         </p>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-[#0e1738] border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-white border border-blue-100 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-600" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by student, USN, or assignment..."
-            className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 placeholder-slate-500 focus:outline-hidden focus:border-sky-500 font-sans"
+            className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200 text-xs text-slate-800 placeholder-slate-500 focus:outline-hidden focus:border-blue-500 font-sans"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
+          <div className="flex items-center gap-1.5 text-xs text-slate-600 font-mono">
             <span>Risk:</span>
             <select
               value={selectedRisk}
               onChange={(e) => setSelectedRisk(e.target.value)}
-              className="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs text-slate-200 focus:outline-hidden focus:border-sky-500"
+              className="px-2.5 py-1 rounded-md bg-blue-50/60 border border-blue-200 text-xs text-slate-800 focus:outline-hidden focus:border-blue-500"
             >
               <option value="all">All Risks</option>
               <option value="High">High Risk</option>
@@ -252,12 +252,12 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
+          <div className="flex items-center gap-1.5 text-xs text-slate-600 font-mono">
             <span>Status:</span>
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs text-slate-200 focus:outline-hidden focus:border-sky-500"
+              className="px-2.5 py-1 rounded-md bg-blue-50/60 border border-blue-200 text-xs text-slate-800 focus:outline-hidden focus:border-blue-500"
             >
               <option value="all">All Statuses</option>
               <option value="Pending Review">Pending Review</option>
@@ -269,11 +269,11 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
       </div>
 
       {/* Flagged Incidents Table */}
-      <div className="bg-[#0e1738] border border-slate-800 rounded-xl overflow-hidden shadow-sm">
-        <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between">
+      <div className="bg-white border border-blue-100 rounded-xl overflow-hidden shadow-sm">
+        <div className="px-5 py-3 border-b border-blue-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-white tracking-tight">Flagged Copy-Paste Incidents</h2>
-            <span className="text-[10px] font-mono text-slate-400">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight">Flagged Copy-Paste Incidents</h2>
+            <span className="text-[10px] font-mono text-slate-600">
               ({filteredAlerts.length} entries matching filter)
             </span>
           </div>
@@ -287,7 +287,7 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400 uppercase text-[10px] font-mono bg-slate-900/60">
+                <tr className="border-b border-blue-100 text-slate-600 uppercase text-[10px] font-mono bg-[#f4f8ff]">
                   <th className="py-3 px-4">Student Name & USN</th>
                   <th className="py-3 px-4">Assignment Name</th>
                   <th className="py-3 px-3">Paste Size</th>
@@ -298,31 +298,31 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-sans text-xs">
+              <tbody className="divide-y divide-blue-100 font-sans text-xs">
                 {filteredAlerts.map((alert) => (
-                  <tr key={alert.id} className="hover:bg-slate-900/50 transition-colors">
+                  <tr key={alert.id} className="hover:bg-[#f4f8ff] transition-colors">
                     <td className="py-3 px-4">
-                      <div className="font-semibold text-slate-200">{alert.studentName}</div>
-                      <div className="font-mono text-[11px] text-emerald-400 font-bold">
+                      <div className="font-semibold text-slate-800">{alert.studentName}</div>
+                      <div className="font-mono text-[11px] text-emerald-600 font-bold">
                         {alert.usn}
                       </div>
-                      <div className="text-[10px] text-slate-400">
+                      <div className="text-[10px] text-slate-600">
                         Sem {alert.semesterNumber} · {alert.batch}
                       </div>
                     </td>
 
                     <td className="py-3 px-4 max-w-xs">
-                      <span className="text-slate-200 font-medium truncate block" title={alert.assignmentName}>
+                      <span className="text-slate-800 font-medium truncate block" title={alert.assignmentName}>
                         {alert.assignmentName}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-400 block truncate">
+                      <span className="text-[10px] font-mono text-slate-600 block truncate">
                         {alert.matchedSourceDescription}
                       </span>
                     </td>
 
                     <td className="py-3 px-3 font-mono">
-                      <span className="text-white font-bold">{alert.linesPasted} lines</span>
-                      <span className="text-[10px] text-slate-400 block">{alert.charactersPasted} chars</span>
+                      <span className="text-slate-900 font-bold">{alert.linesPasted} lines</span>
+                      <span className="text-[10px] text-slate-600 block">{alert.charactersPasted} chars</span>
                     </td>
 
                     <td className="py-3 px-3 font-mono">
@@ -330,23 +330,23 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
                         <span
                           className={`font-bold tabular-nums ${
                             alert.similarityScore >= 75
-                              ? 'text-rose-400'
+                              ? 'text-rose-600'
                               : alert.similarityScore >= 40
-                              ? 'text-amber-400'
-                              : 'text-sky-400'
+                              ? 'text-amber-600'
+                              : 'text-blue-600'
                           }`}
                         >
                           {alert.similarityScore}%
                         </span>
                       </div>
-                      <div className="w-16 bg-slate-800 rounded-full h-1 mt-1 overflow-hidden">
+                      <div className="w-16 bg-blue-100 rounded-full h-1 mt-1 overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
                             alert.similarityScore >= 75
                               ? 'bg-rose-500'
                               : alert.similarityScore >= 40
                               ? 'bg-amber-500'
-                              : 'bg-sky-500'
+                              : 'bg-blue-500'
                           }`}
                           style={{ width: `${alert.similarityScore}%` }}
                         />
@@ -357,17 +357,17 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
                       <span
                         className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
                           alert.riskLevel === 'High'
-                            ? 'bg-rose-950 text-rose-300 border-rose-500/40'
+                            ? 'bg-rose-50 text-rose-700 border-rose-300'
                             : alert.riskLevel === 'Medium'
-                            ? 'bg-amber-950 text-amber-300 border-amber-500/40'
-                            : 'bg-sky-950 text-sky-300 border-sky-500/40'
+                            ? 'bg-amber-50 text-amber-700 border-amber-300'
+                            : 'bg-blue-50 text-blue-700 border-blue-300'
                         }`}
                       >
                         {alert.riskLevel}
                       </span>
                     </td>
 
-                    <td className="py-3 px-3 font-mono text-[11px] text-slate-400 whitespace-nowrap">
+                    <td className="py-3 px-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">
                       {alert.timestamp}
                     </td>
 
@@ -375,10 +375,10 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
                       <span
                         className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
                           alert.status === 'Reviewed'
-                            ? 'bg-emerald-950 text-emerald-400 border-emerald-500/30'
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
                             : alert.status === 'Dismissed False Positive'
-                            ? 'bg-slate-900 text-slate-400 border-slate-700'
-                            : 'bg-amber-950 text-amber-300 border-amber-500/30'
+                            ? 'bg-blue-50/60 text-slate-600 border-blue-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
                         }`}
                       >
                         {alert.status}
@@ -389,7 +389,7 @@ export const AcademicIntegrityMonitoring: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleOpenInspect(alert)}
-                        className="px-3 py-1.5 rounded-lg bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white border border-sky-500/30 text-xs font-semibold transition-all inline-flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 text-xs font-semibold transition-all inline-flex items-center gap-1.5"
                       >
                         <GitCompare className="w-3.5 h-3.5" />
                         <span>Inspect & Compare</span>

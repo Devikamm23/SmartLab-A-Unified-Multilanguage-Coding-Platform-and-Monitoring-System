@@ -7,6 +7,7 @@ import {
   FacultyNotificationItem,
   LabSession,
   LanguageConfig,
+  MakeupLabRequest,
   Semester,
   StudentLabSession,
   Subject,
@@ -14,10 +15,7 @@ import {
   SupportedLanguage,
   User,
 } from '../types';
-import {
-  buildFullStudentCohort,
-  buildLiveBatchMonitoringSessions,
-} from './rosterData';
+import { COLLEGE_CONFIG } from '../constants/college';
 
 const FACULTY_AVATAR_ARVIND =
   'data:image/svg+xml;utf8,' +
@@ -406,277 +404,72 @@ public class Main {
 `,
     maxMarks: 50,
   },
+  {
+    id: 'exp-05',
+    subjectId: 'sub-is504',
+    subjectCode: 'IS504',
+    experimentNumber: 5,
+    title: 'Binary Search Tree & Inorder Traversal in Python',
+    description: 'Build a Binary Search Tree from input integers and output sorted inorder traversal.',
+    problemStatement: `Given N integers, insert them sequentially into a Binary Search Tree (BST) and print the inorder traversal separated by spaces.`,
+    inputFormat: 'Line 1: N\nLine 2: N space-separated integers',
+    outputFormat: 'Space-separated integers in inorder sequence',
+    constraints: ['1 <= N <= 500'],
+    programmingLanguage: 'python',
+    testCases: [
+      { id: 'tc-05-1', input: '5\n50 30 70 20 40', expectedOutput: '20 30 40 50 70', isHidden: false },
+      { id: 'tc-05-2', input: '3\n10 5 15', expectedOutput: '5 10 15', isHidden: true },
+    ],
+    starterCode: `import sys
+
+class Node:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+
+def insert(root, val):
+    if not root:
+        return Node(val)
+    if val < root.val:
+        root.left = insert(root.left, val)
+    else:
+        root.right = insert(root.right, val)
+    return root
+
+def inorder(root, out):
+    if not root:
+        return
+    inorder(root.left, out)
+    out.append(str(root.val))
+    inorder(root.right, out)
+
+def main():
+    tokens = sys.stdin.read().split()
+    if not tokens:
+        return
+    n = int(tokens[0])
+    vals = [int(x) for x in tokens[1:n+1]]
+    root = None
+    for v in vals:
+        root = insert(root, v)
+    out = []
+    inorder(root, out)
+    print(" ".join(out))
+
+if __name__ == '__main__':
+    main()
+`,
+    maxMarks: 50,
+  },
 ];
 
 const BASE_INITIAL_USERS: User[] = [
-  // --- 2024 Admission Batch (Semester 5 & 6, 3rd Year) ---
-  {
-    id: 'usr-student-1',
-    name: 'Devika Rao',
-    studentName: 'Devika Rao',
-    email: 'devika.24is010@gsss.edu.in',
-    role: 'student',
-    usn: '4GW24IS010',
-    admissionYear: 2024,
-    currentSemester: 5,
-    semester: 5,
-    academicYear: '2026-2027',
-    batch: 'Batch A',
-    department: 'Information Science & Engineering',
-    createdAt: '2024-08-10',
-  },
-  {
-    id: 'usr-student-2',
-    name: 'Sneha Patil',
-    studentName: 'Sneha Patil',
-    email: 'sneha.24is011@gsss.edu.in',
-    role: 'student',
-    usn: '4GW24IS011',
-    admissionYear: 2024,
-    currentSemester: 5,
-    semester: 5,
-    academicYear: '2026-2027',
-    batch: 'Batch B',
-    department: 'Information Science & Engineering',
-    createdAt: '2024-08-10',
-  },
-  {
-    id: 'usr-student-3',
-    name: 'Ananya Sen',
-    studentName: 'Ananya Sen',
-    email: 'ananya.24is012@gsss.edu.in',
-    role: 'student',
-    usn: '4GW24IS012',
-    admissionYear: 2024,
-    currentSemester: 5,
-    semester: 5,
-    academicYear: '2026-2027',
-    batch: 'Batch A',
-    department: 'Information Science & Engineering',
-    createdAt: '2024-08-10',
-  },
-  {
-    id: 'usr-student-3b',
-    name: 'Shreya Kulkarni',
-    studentName: 'Shreya Kulkarni',
-    email: 'shreya.24is013@gsss.edu.in',
-    role: 'student',
-    usn: '4GW24IS013',
-    admissionYear: 2024,
-    currentSemester: 5,
-    semester: 5,
-    academicYear: '2026-2027',
-    batch: 'Batch C',
-    department: 'Information Science & Engineering',
-    createdAt: '2024-08-10',
-  },
-  {
-    id: 'usr-student-6a',
-    name: 'Kruthi Mohan',
-    studentName: 'Kruthi Mohan',
-    email: 'kruthi.24is014@gsss.edu.in',
-    role: 'student',
-    usn: '4GW24IS014',
-    admissionYear: 2024,
-    currentSemester: 6,
-    semester: 6,
-    academicYear: '2026-2027',
-    batch: 'Batch A',
-    department: 'Information Science & Engineering',
-    createdAt: '2024-08-10',
-  },
-
-  // --- 2025 Admission Batch (Semester 3 & 4, 2nd Year) ---
-  {
-    id: 'usr-student-4',
-    name: 'Keerthana M.',
-    studentName: 'Keerthana M.',
-    email: 'keerthana.25is010@gsss.edu.in',
-    role: 'student',
-    usn: '4GW25IS010',
-    admissionYear: 2025,
-    currentSemester: 3,
-    semester: 3,
-    academicYear: '2026-2027',
-    batch: 'Batch A',
-    department: 'Information Science & Engineering',
-    createdAt: '2025-08-12',
-  },
-  {
-    id: 'usr-student-3b-2',
-    name: 'Priya Dharshini',
-    studentName: 'Priya Dharshini',
-    email: 'priya.25is011@gsss.edu.in',
-    role: 'student',
-    usn: '4GW25IS011',
-    admissionYear: 2025,
-    currentSemester: 3,
-    semester: 3,
-    academicYear: '2026-2027',
-    batch: 'Batch B',
-    department: 'Information Science & Engineering',
-    createdAt: '2025-08-12',
-  },
-  {
-    id: 'usr-student-3c',
-    name: 'Tanvi Hegde',
-    studentName: 'Tanvi Hegde',
-    email: 'tanvi.25is012@gsss.edu.in',
-    role: 'student',
-    usn: '4GW25IS012',
-    admissionYear: 2025,
-    currentSemester: 3,
-    semester: 3,
-    academicYear: '2026-2027',
-    batch: 'Batch C',
-    department: 'Information Science & Engineering',
-    createdAt: '2025-08-12',
-  },
-  {
-    id: 'usr-student-4a',
-    name: 'Niharika V.',
-    studentName: 'Niharika V.',
-    email: 'niharika.25is013@gsss.edu.in',
-    role: 'student',
-    usn: '4GW25IS013',
-    admissionYear: 2025,
-    currentSemester: 4,
-    semester: 4,
-    academicYear: '2026-2027',
-    batch: 'Batch A',
-    department: 'Information Science & Engineering',
-    createdAt: '2025-08-12',
-  },
-
-  // --- 2023 Admission Batch (Semester 7 & 8, 4th Year) ---
-  {
-    id: 'usr-student-7a',
-    name: 'Bhavana S.',
-    studentName: 'Bhavana S.',
-    email: 'bhavana.23is010@gsss.edu.in',
-    role: 'student',
-    usn: '4GW23IS010',
-    admissionYear: 2023,
-    currentSemester: 7,
-    semester: 7,
-    academicYear: '2026-2027',
-    batch: 'Batch A',
-    department: 'Information Science & Engineering',
-    createdAt: '2023-08-10',
-  },
-  {
-    id: 'usr-student-7b',
-    name: 'Meghana R.',
-    studentName: 'Meghana R.',
-    email: 'meghana.23is011@gsss.edu.in',
-    role: 'student',
-    usn: '4GW23IS011',
-    admissionYear: 2023,
-    currentSemester: 7,
-    semester: 7,
-    academicYear: '2026-2027',
-    batch: 'Batch B',
-    department: 'Information Science & Engineering',
-    createdAt: '2023-08-10',
-  },
-  {
-    id: 'usr-student-7c',
-    name: 'Rachana Pai',
-    studentName: 'Rachana Pai',
-    email: 'rachana.23is012@gsss.edu.in',
-    role: 'student',
-    usn: '4GW23IS012',
-    admissionYear: 2023,
-    currentSemester: 7,
-    semester: 7,
-    academicYear: '2026-2027',
-    batch: 'Batch C',
-    department: 'Information Science & Engineering',
-    createdAt: '2023-08-10',
-  },
-  {
-    id: 'usr-student-8a',
-    name: 'Swathi Shetty',
-    studentName: 'Swathi Shetty',
-    email: 'swathi.23is013@gsss.edu.in',
-    role: 'student',
-    usn: '4GW23IS013',
-    admissionYear: 2023,
-    currentSemester: 8,
-    semester: 8,
-    academicYear: '2026-2027',
-    batch: 'Batch A',
-    department: 'Information Science & Engineering',
-    createdAt: '2023-08-10',
-  },
-
-  // --- 2026 Admission Batch (Semester 1 & 2, 1st Year) ---
-  {
-    id: 'usr-student-1a',
-    name: 'Aditi Sharma',
-    studentName: 'Aditi Sharma',
-    email: 'aditi.26is010@gsss.edu.in',
-    role: 'student',
-    usn: '4GW26IS010',
-    admissionYear: 2026,
-    currentSemester: 1,
-    semester: 1,
-    academicYear: '2026-2027',
-    batch: 'Batch A',
-    department: 'Information Science & Engineering',
-    createdAt: '2026-08-14',
-  },
-  {
-    id: 'usr-student-1b',
-    name: 'Sahana Kulkarni',
-    studentName: 'Sahana Kulkarni',
-    email: 'sahana.26is011@gsss.edu.in',
-    role: 'student',
-    usn: '4GW26IS011',
-    admissionYear: 2026,
-    currentSemester: 1,
-    semester: 1,
-    academicYear: '2026-2027',
-    batch: 'Batch B',
-    department: 'Information Science & Engineering',
-    createdAt: '2026-08-14',
-  },
-  {
-    id: 'usr-student-1c',
-    name: 'Varsha Gowda',
-    studentName: 'Varsha Gowda',
-    email: 'varsha.26is012@gsss.edu.in',
-    role: 'student',
-    usn: '4GW26IS012',
-    admissionYear: 2026,
-    currentSemester: 1,
-    semester: 1,
-    academicYear: '2026-2027',
-    batch: 'Batch C',
-    department: 'Information Science & Engineering',
-    createdAt: '2026-08-14',
-  },
-  {
-    id: 'usr-student-2a',
-    name: 'Deepa N.',
-    studentName: 'Deepa N.',
-    email: 'deepa.26is013@gsss.edu.in',
-    role: 'student',
-    usn: '4GW26IS013',
-    admissionYear: 2026,
-    currentSemester: 2,
-    semester: 2,
-    academicYear: '2026-2027',
-    batch: 'Batch A',
-    department: 'Information Science & Engineering',
-    createdAt: '2026-08-14',
-  },
-
   // --- FACULTY USERS ---
   {
     id: 'usr-teacher-1',
-    name: 'Dr. Arvind Kulkarni',
-    email: 'arvind.kulkarni@gsss.edu.in',
+    name: 'Dr Girish S C',
+    email: 'girish.sc@gsss.edu.in',
     role: 'teacher',
     avatar: FACULTY_AVATAR_ARVIND,
     employeeCode: 'TCH-ISE-012',
@@ -720,7 +513,7 @@ const BASE_INITIAL_USERS: User[] = [
   },
 ];
 
-export const INITIAL_USERS: User[] = buildFullStudentCohort(BASE_INITIAL_USERS);
+export const INITIAL_USERS: User[] = BASE_INITIAL_USERS;
 
 export const INITIAL_LAB_SESSIONS: LabSession[] = [
   {
@@ -735,7 +528,7 @@ export const INITIAL_LAB_SESSIONS: LabSession[] = [
     experimentName: 'Two Sum & Frequency Mapping in Python',
     programmingLanguage: 'python',
     teacherId: 'usr-teacher-1',
-    teacherName: 'Dr. Arvind Kulkarni',
+    teacherName: 'Dr Girish S C',
     startDate: '2026-11-15',
     startTime: '09:00',
     endTime: '11:00',
@@ -758,7 +551,7 @@ export const INITIAL_LAB_SESSIONS: LabSession[] = [
     experimentName: 'Balanced Parentheses Verification',
     programmingLanguage: 'python',
     teacherId: 'usr-teacher-1',
-    teacherName: 'Dr. Arvind Kulkarni',
+    teacherName: 'Dr Girish S C',
     startDate: '2026-11-04',
     startTime: '13:30',
     endTime: '16:30',
@@ -790,892 +583,18 @@ export const INITIAL_LAB_SESSIONS: LabSession[] = [
   },
 ];
 
-const BASE_INITIAL_STUDENT_LAB_SESSIONS: StudentLabSession[] = [
-  {
-    id: 'sls-01',
-    studentId: 'usr-student-1',
-    studentName: 'Devika Rao',
-    usn: '4GW24IS010',
-    semesterNumber: 5,
-    batch: 'Batch A',
-    labSessionId: 'ls-501',
-    experimentName: 'Two Sum & Frequency Mapping in Python',
-    subjectName: 'Python Programming & Scripting Laboratory',
-    programmingLanguage: 'python',
-    sessionStartTime: '2026-11-04T09:00:00',
-    loginTime: '2026-11-04 09:02:15',
-    totalDurationSeconds: 2280, // 38 mins into 120-min session
-    activeTimeSeconds: 1980, // 33 mins typing
-    idleTimeSeconds: 300, // 5 mins idle
-    compilationAttempts: 6,
-    successfulCompilations: 5,
-    failedCompilations: 1,
-    programExecutions: 5,
-    executionErrors: 0,
-    clipboardViolationCount: 0,
-    lastInteractionTime: '2026-11-04T09:37:45',
-    status: 'active',
-    activityStatus: 'Typing', // 1. Typing – Green
-    sessionDurationMinutes: 120,
-    remainingSeconds: 4920, // 82 mins remaining
-    testCasesPassed: 5,
-    totalTestCases: 5,
-    submissionCount: 1,
-    assignmentStatus: 'In Progress',
-    currentCode: INITIAL_EXPERIMENTS[0].starterCode,
-    score: 48,
-    aiEvaluation: {
-      activeParticipation: {
-        criteriaName: 'Active Lab Participation',
-        marksAwarded: 10,
-        maxMarks: 10,
-        explanation: 'Excellent interaction rhythm with 33 minutes focused coding and zero security violations.',
-      },
-      problemUnderstanding: {
-        criteriaName: 'Problem Understanding & Approach',
-        marksAwarded: 10,
-        maxMarks: 10,
-        explanation: 'Utilized optimal dictionary hashing for O(N) linear time frequency lookup.',
-      },
-      codeImplementation: {
-        criteriaName: 'Code Implementation & Correctness',
-        marksAwarded: 14,
-        maxMarks: 15,
-        explanation: 'Clean idiomatic Python code with modular functions and defensive type checks.',
-      },
-      testCaseResults: {
-        criteriaName: 'Test Case Results',
-        marksAwarded: 10,
-        maxMarks: 10,
-        explanation: '5 of 5 test cases passed with zero memory leaks (100% test accuracy).',
-      },
-      assignmentCompletion: {
-        criteriaName: 'Assignment Completion & Submission',
-        marksAwarded: 4,
-        maxMarks: 5,
-        explanation: 'Working solution ready; pending final official submission confirmation.',
-      },
-      totalSuggestedScore: 48,
-      overallExplanation: 'Outstanding solution demonstrated. Highly efficient hash mapping approach with all test cases verified.',
-      codeQualitySummary: 'Lines: 24 | Complexity: O(N) Hash Lookup | Edge Cases: Handled',
-      evaluatedAt: '2026-11-04T09:38:00',
-    },
-    facultyApprovedScore: 48,
-    facultyFeedback: 'Clean dictionary logic and well-structured code. Keep it up.',
-    isFacultyApproved: true,
-    facultyApprovedAt: '2026-11-04T09:40:00',
-  },
-  {
-    id: 'sls-02',
-    studentId: 'usr-student-2',
-    studentName: 'Sneha Patil',
-    usn: '4GW24IS011',
-    semesterNumber: 5,
-    batch: 'Batch B',
-    labSessionId: 'ls-501',
-    experimentName: 'Two Sum & Frequency Mapping in Python',
-    subjectName: 'Python Programming & Scripting Laboratory',
-    programmingLanguage: 'python',
-    sessionStartTime: '2026-11-04T09:00:00',
-    sessionEndTime: '2026-11-04T10:45:00',
-    loginTime: '2026-11-04 09:01:20',
-    logoutTime: '2026-11-04 10:48:10',
-    totalDurationSeconds: 6300, // 1h 45m
-    activeTimeSeconds: 5200,
-    idleTimeSeconds: 1100,
-    compilationAttempts: 9,
-    successfulCompilations: 8,
-    failedCompilations: 1,
-    programExecutions: 8,
-    executionErrors: 0,
-    clipboardViolationCount: 0,
-    lastInteractionTime: '2026-11-04T10:45:00',
-    status: 'completed',
-    activityStatus: 'Submitted', // 5. Submitted – Purple
-    sessionDurationMinutes: 120,
-    remainingSeconds: 900,
-    testCasesPassed: 5,
-    totalTestCases: 5,
-    submissionCount: 2,
-    assignmentStatus: 'Completed',
-    currentCode: INITIAL_EXPERIMENTS[0].starterCode,
-    score: 49,
-    aiEvaluation: {
-      activeParticipation: {
-        criteriaName: 'Active Lab Participation',
-        marksAwarded: 10,
-        maxMarks: 10,
-        explanation: 'Regular compile-run iterations and steady focused typing throughout the 120-minute slot.',
-      },
-      problemUnderstanding: {
-        criteriaName: 'Problem Understanding & Approach',
-        marksAwarded: 10,
-        maxMarks: 10,
-        explanation: 'Clear grasp of space-time trade-offs; implemented optimal hash table indexing.',
-      },
-      codeImplementation: {
-        criteriaName: 'Code Implementation & Correctness',
-        marksAwarded: 14,
-        maxMarks: 15,
-        explanation: 'Very readable code with comprehensive comments and proper indentation.',
-      },
-      testCaseResults: {
-        criteriaName: 'Test Case Results',
-        marksAwarded: 10,
-        maxMarks: 10,
-        explanation: 'All public and hidden test cases passed successfully.',
-      },
-      assignmentCompletion: {
-        criteriaName: 'Assignment Completion & Submission',
-        marksAwarded: 5,
-        maxMarks: 5,
-        explanation: 'Submitted 15 minutes before lab session end time.',
-      },
-      totalSuggestedScore: 49,
-      overallExplanation: 'Complete and fully verified submission. Exceeds standard syllabus criteria.',
-      codeQualitySummary: 'Lines: 28 | Complexity: O(N) | Edge Cases: Handled',
-      evaluatedAt: '2026-11-04T10:46:00',
-    },
-    facultyApprovedScore: 49,
-    facultyFeedback: 'Excellent solution. Verified test suite passed completely.',
-    isFacultyApproved: true,
-    facultyApprovedAt: '2026-11-04T10:50:00',
-  },
-  {
-    id: 'sls-03',
-    studentId: 'usr-student-3',
-    studentName: 'Ananya Sen',
-    usn: '4GW24IS012',
-    semesterNumber: 5,
-    batch: 'Batch A',
-    labSessionId: 'ls-501',
-    experimentName: 'Two Sum & Frequency Mapping in Python',
-    subjectName: 'Python Programming & Scripting Laboratory',
-    programmingLanguage: 'python',
-    sessionStartTime: '2026-11-04T09:00:00',
-    loginTime: '2026-11-04 09:04:10',
-    totalDurationSeconds: 2100, // 35 mins
-    activeTimeSeconds: 1300,
-    idleTimeSeconds: 800,
-    compilationAttempts: 4,
-    successfulCompilations: 3,
-    failedCompilations: 1,
-    programExecutions: 3,
-    executionErrors: 0,
-    clipboardViolationCount: 0,
-    lastInteractionTime: '2026-11-04T09:35:00',
-    status: 'active',
-    activityStatus: 'Viewing', // 3. Viewing – Blue
-    sessionDurationMinutes: 120,
-    remainingSeconds: 5100,
-    testCasesPassed: 3,
-    totalTestCases: 5,
-    submissionCount: 0,
-    assignmentStatus: 'In Progress',
-    currentCode: INITIAL_EXPERIMENTS[0].starterCode,
-    score: 38,
-    aiEvaluation: {
-      activeParticipation: {
-        criteriaName: 'Active Lab Participation',
-        marksAwarded: 8,
-        maxMarks: 10,
-        explanation: 'Active in session viewing problem constraints and reference materials.',
-      },
-      problemUnderstanding: {
-        criteriaName: 'Problem Understanding & Approach',
-        marksAwarded: 8,
-        maxMarks: 10,
-        explanation: 'Identified brute force search approach; working towards hash optimization.',
-      },
-      codeImplementation: {
-        criteriaName: 'Code Implementation & Correctness',
-        marksAwarded: 11,
-        maxMarks: 15,
-        explanation: 'Syntactically valid nested loop implementation.',
-      },
-      testCaseResults: {
-        criteriaName: 'Test Case Results',
-        marksAwarded: 6,
-        maxMarks: 10,
-        explanation: '3 of 5 test cases passed. Large input test case hit timeout limit.',
-      },
-      assignmentCompletion: {
-        criteriaName: 'Assignment Completion & Submission',
-        marksAwarded: 3,
-        maxMarks: 5,
-        explanation: 'Currently coding draft implementation; not yet submitted.',
-      },
-      totalSuggestedScore: 36,
-      overallExplanation: 'Solid progress. Encourage student to replace O(N^2) loops with dictionary mapping before final submission.',
-      codeQualitySummary: 'Lines: 18 | Complexity: O(N^2) Nested Loops | Edge Cases: Partial',
-      evaluatedAt: '2026-11-04T09:36:00',
-    },
-    facultyApprovedScore: 36,
-    facultyFeedback: 'Advised to eliminate nested loop before final cutoff.',
-    isFacultyApproved: false,
-  },
-  {
-    id: 'sls-04',
-    studentId: 'usr-student-4',
-    studentName: 'Keerthana M.',
-    usn: '4GW25IS010',
-    semesterNumber: 5,
-    batch: 'Batch A',
-    labSessionId: 'ls-501',
-    experimentName: 'Two Sum & Frequency Mapping in Python',
-    subjectName: 'Python Programming & Scripting Laboratory',
-    programmingLanguage: 'python',
-    sessionStartTime: '2026-11-04T09:00:00',
-    loginTime: '2026-11-04 09:08:45',
-    totalDurationSeconds: 1800, // 30 mins
-    activeTimeSeconds: 600, // 10 mins active
-    idleTimeSeconds: 1200, // 20 mins idle (>2 min threshold)
-    compilationAttempts: 1,
-    successfulCompilations: 1,
-    failedCompilations: 0,
-    programExecutions: 1,
-    executionErrors: 0,
-    clipboardViolationCount: 0,
-    lastInteractionTime: '2026-11-04T09:18:00',
-    status: 'idle',
-    activityStatus: 'Idle', // 2. Idle – Yellow
-    sessionDurationMinutes: 120,
-    remainingSeconds: 5400,
-    testCasesPassed: 1,
-    totalTestCases: 5,
-    submissionCount: 0,
-    assignmentStatus: 'In Progress',
-    currentCode: INITIAL_EXPERIMENTS[0].starterCode,
-    score: 28,
-    aiEvaluation: {
-      activeParticipation: {
-        criteriaName: 'Active Lab Participation',
-        marksAwarded: 4,
-        maxMarks: 10,
-        explanation: 'Student has been inactive for extended period (>15 minutes of inactivity).',
-      },
-      problemUnderstanding: {
-        criteriaName: 'Problem Understanding & Approach',
-        marksAwarded: 6,
-        maxMarks: 10,
-        explanation: 'Initial boilerplate instantiated; algorithm not yet formulated.',
-      },
-      codeImplementation: {
-        criteriaName: 'Code Implementation & Correctness',
-        marksAwarded: 8,
-        maxMarks: 15,
-        explanation: 'Minimal custom logic written beyond starter template.',
-      },
-      testCaseResults: {
-        criteriaName: 'Test Case Results',
-        marksAwarded: 2,
-        maxMarks: 10,
-        explanation: '1 of 5 default test case passed.',
-      },
-      assignmentCompletion: {
-        criteriaName: 'Assignment Completion & Submission',
-        marksAwarded: 2,
-        maxMarks: 5,
-        explanation: 'Currently idle; assignment incomplete.',
-      },
-      totalSuggestedScore: 22,
-      overallExplanation: 'Low activity detected. Faculty intervention advised to assist with algorithm breakdown.',
-      codeQualitySummary: 'Lines: 12 | Complexity: Incomplete | Edge Cases: None',
-      evaluatedAt: '2026-11-04T09:30:00',
-    },
-    facultyApprovedScore: 22,
-    facultyFeedback: 'Reminded student to focus on lab task.',
-    isFacultyApproved: false,
-  },
-  {
-    id: 'sls-05',
-    studentId: 'usr-student-5',
-    studentName: 'Pooja V.',
-    usn: '4GW25IS011',
-    semesterNumber: 5,
-    batch: 'Batch C',
-    labSessionId: 'ls-501',
-    experimentName: 'Two Sum & Frequency Mapping in Python',
-    subjectName: 'Python Programming & Scripting Laboratory',
-    programmingLanguage: 'python',
-    sessionStartTime: '2026-11-04T09:00:00',
-    loginTime: 'Not Logged In',
-    totalDurationSeconds: 0,
-    activeTimeSeconds: 0,
-    idleTimeSeconds: 0,
-    compilationAttempts: 0,
-    successfulCompilations: 0,
-    failedCompilations: 0,
-    programExecutions: 0,
-    executionErrors: 0,
-    clipboardViolationCount: 0,
-    lastInteractionTime: '2026-11-04T09:00:00',
-    status: 'idle',
-    activityStatus: 'Absent', // 4. Absent – Red
-    sessionDurationMinutes: 120,
-    remainingSeconds: 7200,
-    testCasesPassed: 0,
-    totalTestCases: 5,
-    submissionCount: 0,
-    assignmentStatus: 'Not Started',
-    currentCode: '',
-    score: 0,
-    aiEvaluation: {
-      activeParticipation: {
-        criteriaName: 'Active Lab Participation',
-        marksAwarded: 0,
-        maxMarks: 10,
-        explanation: 'Student did not log into the laboratory session.',
-      },
-      problemUnderstanding: {
-        criteriaName: 'Problem Understanding & Approach',
-        marksAwarded: 0,
-        maxMarks: 10,
-        explanation: 'No submission or approach recorded.',
-      },
-      codeImplementation: {
-        criteriaName: 'Code Implementation & Correctness',
-        marksAwarded: 0,
-        maxMarks: 15,
-        explanation: 'No code submitted.',
-      },
-      testCaseResults: {
-        criteriaName: 'Test Case Results',
-        marksAwarded: 0,
-        maxMarks: 10,
-        explanation: '0 of 5 test cases evaluated.',
-      },
-      assignmentCompletion: {
-        criteriaName: 'Assignment Completion & Submission',
-        marksAwarded: 0,
-        maxMarks: 5,
-        explanation: 'Absent from scheduled lab slot.',
-      },
-      totalSuggestedScore: 0,
-      overallExplanation: 'Student marked absent. Medical or official leave verification required.',
-      codeQualitySummary: 'Lines: 0 | Status: Absent',
-      evaluatedAt: '2026-11-04T09:30:00',
-    },
-    facultyApprovedScore: 0,
-    facultyFeedback: 'Marked absent for lab slot.',
-    isFacultyApproved: true,
-    facultyApprovedAt: '2026-11-04T09:35:00',
-  },
-  {
-    id: 'sls-06',
-    studentId: 'usr-student-7a',
-    studentName: 'Bhavana S.',
-    usn: '4GW23IS010',
-    semesterNumber: 7,
-    batch: 'Batch A',
-    labSessionId: 'ls-501',
-    experimentName: 'Cloud Native Microservices Architecture Lab',
-    subjectName: 'Cloud Computing Laboratory',
-    programmingLanguage: 'python',
-    sessionStartTime: '2026-11-04T09:00:00',
-    sessionEndTime: '2026-11-04T10:30:00',
-    loginTime: '2026-11-04 09:03:00',
-    logoutTime: '2026-11-04 10:32:00',
-    totalDurationSeconds: 5400,
-    activeTimeSeconds: 4600,
-    idleTimeSeconds: 800,
-    compilationAttempts: 8,
-    successfulCompilations: 8,
-    failedCompilations: 0,
-    programExecutions: 8,
-    executionErrors: 0,
-    clipboardViolationCount: 0,
-    lastInteractionTime: '2026-11-04T10:30:00',
-    status: 'completed',
-    activityStatus: 'Submitted', // 5. Submitted - Purple
-    sessionDurationMinutes: 120,
-    remainingSeconds: 1800,
-    testCasesPassed: 5,
-    totalTestCases: 5,
-    submissionCount: 1,
-    assignmentStatus: 'Completed',
-    currentCode: INITIAL_EXPERIMENTS[0].starterCode,
-    score: 50,
-    aiEvaluation: {
-      activeParticipation: {
-        criteriaName: 'Active Lab Participation',
-        marksAwarded: 10,
-        maxMarks: 10,
-        explanation: 'Flawless execution pace with disciplined commits.',
-      },
-      problemUnderstanding: {
-        criteriaName: 'Problem Understanding & Approach',
-        marksAwarded: 10,
-        maxMarks: 10,
-        explanation: 'Demonstrated complete architectural understanding.',
-      },
-      codeImplementation: {
-        criteriaName: 'Code Implementation & Correctness',
-        marksAwarded: 15,
-        maxMarks: 15,
-        explanation: 'Optimal algorithmic structure with perfect exception handling.',
-      },
-      testCaseResults: {
-        criteriaName: 'Test Case Results',
-        marksAwarded: 10,
-        maxMarks: 10,
-        explanation: 'All 5 test cases verified.',
-      },
-      assignmentCompletion: {
-        criteriaName: 'Assignment Completion & Submission',
-        marksAwarded: 5,
-        maxMarks: 5,
-        explanation: 'Submitted 30 minutes ahead of lab close.',
-      },
-      totalSuggestedScore: 50,
-      overallExplanation: 'Exemplary submission across all metrics.',
-      codeQualitySummary: 'Lines: 36 | Complexity: O(N) | Edge Cases: Handled',
-      evaluatedAt: '2026-11-04T10:31:00',
-    },
-    facultyApprovedScore: 50,
-    facultyFeedback: 'Outstanding work.',
-    isFacultyApproved: true,
-    facultyApprovedAt: '2026-11-04T10:35:00',
-  },
-  {
-    id: 'sls-07',
-    studentId: 'usr-student-1a',
-    studentName: 'Aditi Sharma',
-    usn: '4GW26IS010',
-    semesterNumber: 1,
-    batch: 'Batch A',
-    labSessionId: 'ls-501',
-    experimentName: 'Problem Solving through C Programming',
-    subjectName: 'C Programming & Logic Laboratory',
-    programmingLanguage: 'c',
-    sessionStartTime: '2026-11-04T09:00:00',
-    loginTime: '2026-11-04 09:05:30',
-    totalDurationSeconds: 1950,
-    activeTimeSeconds: 1600,
-    idleTimeSeconds: 350,
-    compilationAttempts: 5,
-    successfulCompilations: 4,
-    failedCompilations: 1,
-    programExecutions: 4,
-    executionErrors: 0,
-    clipboardViolationCount: 0,
-    lastInteractionTime: '2026-11-04T09:35:00',
-    status: 'active',
-    activityStatus: 'Typing', // 1. Typing – Green
-    sessionDurationMinutes: 120,
-    remainingSeconds: 5250,
-    testCasesPassed: 4,
-    totalTestCases: 5,
-    submissionCount: 0,
-    assignmentStatus: 'In Progress',
-    currentCode: INITIAL_EXPERIMENTS[2].starterCode,
-    score: 42,
-    aiEvaluation: {
-      activeParticipation: {
-        criteriaName: 'Active Lab Participation',
-        marksAwarded: 9,
-        maxMarks: 10,
-        explanation: 'Good coding cadence and debugging rhythm.',
-      },
-      problemUnderstanding: {
-        criteriaName: 'Problem Understanding & Approach',
-        marksAwarded: 8,
-        maxMarks: 10,
-        explanation: 'Correct use of pointer and dynamic structures.',
-      },
-      codeImplementation: {
-        criteriaName: 'Code Implementation & Correctness',
-        marksAwarded: 13,
-        maxMarks: 15,
-        explanation: 'Clean structure with appropriate memory allocation.',
-      },
-      testCaseResults: {
-        criteriaName: 'Test Case Results',
-        marksAwarded: 8,
-        maxMarks: 10,
-        explanation: '4 of 5 test cases passing.',
-      },
-      assignmentCompletion: {
-        criteriaName: 'Assignment Completion & Submission',
-        marksAwarded: 4,
-        maxMarks: 5,
-        explanation: 'Active in editor with 85+ minutes remaining.',
-      },
-      totalSuggestedScore: 42,
-      overallExplanation: 'Promising code from 1st year cohort. Near completion.',
-      codeQualitySummary: 'Lines: 22 | Pointers: Valid | Edge Cases: Handled',
-      evaluatedAt: '2026-11-04T09:36:00',
-    },
-    facultyApprovedScore: 42,
-    facultyFeedback: 'Fix boundary condition for node null pointer.',
-    isFacultyApproved: false,
-  },
-];
+export const INITIAL_STUDENT_LAB_SESSIONS: StudentLabSession[] = [];
 
-export const INITIAL_STUDENT_LAB_SESSIONS: StudentLabSession[] = [
-  ...BASE_INITIAL_STUDENT_LAB_SESSIONS,
-  ...buildLiveBatchMonitoringSessions(
-    INITIAL_USERS.filter(
-      (u) => u.role === 'student' && (u.semester || u.currentSemester) === 5 && u.batch === 'Batch A'
-    ),
-    INITIAL_LAB_SESSIONS[0],
-    INITIAL_EXPERIMENTS[0].starterCode,
-    BASE_INITIAL_STUDENT_LAB_SESSIONS
-  ),
-];
+export const INITIAL_CLIPBOARD_EVENTS: ClipboardEventRecord[] = [];
 
-export const INITIAL_CLIPBOARD_EVENTS: ClipboardEventRecord[] = [
-  {
-    id: 'cb-01',
-    studentId: 'usr-student-1',
-    studentName: 'Devika Rao',
-    usn: '4GW24IS010',
-    labSessionId: 'ls-501',
-    experimentName: 'Two Sum & Frequency Mapping in Python',
-    action: 'paste',
-    blocked: true,
-    timestamp: '2026-11-04T09:18:22',
-    details: 'Blocked Ctrl+V external clipboard paste into Monaco Editor buffer.',
-  },
-  {
-    id: 'cb-02',
-    studentId: 'usr-student-2',
-    studentName: 'Sneha Patil',
-    usn: '4GW24IS011',
-    labSessionId: 'ls-502',
-    experimentName: 'Balanced Parentheses Verification',
-    action: 'copy',
-    blocked: true,
-    timestamp: '2026-11-03T15:20:10',
-    details: 'Blocked Ctrl+C copying solution text to external clipboard.',
-  },
-];
+export const INITIAL_ACTIVITY_LOGS: ActivityLog[] = [];
 
-export const INITIAL_ACTIVITY_LOGS: ActivityLog[] = [
-  {
-    id: 'act-01',
-    userId: 'usr-student-1',
-    userName: 'Devika Rao',
-    userRole: 'student',
-    usn: '4GW24IS010',
-    action: 'Lab Session Initialized',
-    details: 'Entered Python Lab Slot 1 (Two Sum) on Sem 5 Batch A.',
-    timestamp: '2026-11-04T09:05:00',
-    severity: 'info',
-  },
-  {
-    id: 'act-02',
-    userId: 'usr-student-1',
-    userName: 'Devika Rao',
-    userRole: 'student',
-    usn: '4GW24IS010',
-    action: 'Clipboard Violation Intercepted',
-    details: 'Copy/paste security policy enforced: blocked Ctrl+V attempt.',
-    timestamp: '2026-11-04T09:18:22',
-    severity: 'warning',
-  },
-  {
-    id: 'act-03',
-    userId: 'usr-student-1',
-    userName: 'Devika Rao',
-    userRole: 'student',
-    usn: '4GW24IS010',
-    action: 'Code Compilation & Execution',
-    details: 'Compiled solution. Verdict: Accepted (3/3 test cases passed in 0.038s).',
-    timestamp: '2026-11-04T09:25:10',
-    severity: 'success',
-  },
-  {
-    id: 'act-04',
-    userId: 'usr-teacher-1',
-    userName: 'Dr. Arvind Kulkarni',
-    userRole: 'teacher',
-    action: 'Lab Session Started',
-    details: 'Unlocked Session "Python Lab Slot 1" for Semester 5 Batch A.',
-    timestamp: '2026-11-04T09:00:00',
-    severity: 'info',
-  },
-  {
-    id: 'act-05',
-    userId: 'usr-admin-1',
-    userName: 'Prof. Rajesh Verma',
-    userRole: 'admin',
-    action: 'Batch Allocated',
-    details: 'Assigned 30 students to Semester 5 Batch A and Batch B.',
-    timestamp: '2026-11-01T10:00:00',
-    severity: 'info',
-  },
-];
+export const INITIAL_SUBMISSIONS: Submission[] = [];
 
-export const INITIAL_SUBMISSIONS: Submission[] = [
-  {
-    id: 'sub-01',
-    labSessionId: 'ls-501',
-    studentId: 'usr-student-1',
-    studentName: 'Devika Rao',
-    usn: '4GW24IS010',
-    semesterNumber: 5,
-    batch: 'Batch A',
-    experimentName: 'Two Sum & Frequency Mapping in Python',
-    programmingLanguage: 'python',
-    code: INITIAL_EXPERIMENTS[0].starterCode,
-    status: 'Accepted',
-    score: 50,
-    maxScore: 50,
-    executionTime: 0.038,
-    memoryKb: 14200,
-    submittedAt: '2026-11-04T09:25:10',
-    feedback: 'Optimal dictionary lookup implementation with O(N) complexity.',
-  },
-  {
-    id: 'sub-02',
-    labSessionId: 'ls-502',
-    studentId: 'usr-student-2',
-    studentName: 'Sneha Patil',
-    usn: '4GW24IS011',
-    semesterNumber: 5,
-    batch: 'Batch B',
-    experimentName: 'Java Programming Lab',
-    programmingLanguage: 'java',
-    code: `import java.util.concurrent.Semaphore;
+export const INITIAL_INTEGRITY_ALERTS: AcademicIntegrityAlert[] = [];
 
-class SharedResource {
-    static int count = 0;
-    static Semaphore sem = new Semaphore(1);
-    
-    void modify(String threadName) {
-        try {
-            System.out.println(threadName + " waiting for lock");
-            sem.acquire();
-            System.out.println(threadName + " acquired lock");
-            for(int i = 0; i < 5; i++) {
-                count++;
-                System.out.println(threadName + ": " + count);
-                Thread.sleep(100);
-            }
-        } catch(InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            System.out.println(threadName + " released lock");
-            sem.release();
-        }
-    }
-}`,
-    status: 'Accepted',
-    score: 48,
-    maxScore: 50,
-    executionTime: 0.042,
-    memoryKb: 16800,
-    submittedAt: '2026-11-03T16:15:00',
-    feedback: 'Correct semaphore thread locking implementation.',
-  },
-];
+export const INITIAL_FACULTY_NOTIFICATIONS: FacultyNotificationItem[] = [];
 
-export const INITIAL_INTEGRITY_ALERTS: AcademicIntegrityAlert[] = [
-  {
-    id: 'int-01',
-    studentId: 'usr-student-2',
-    studentName: 'Sneha Patil',
-    usn: '4GW24IS011',
-    semesterNumber: 5,
-    batch: 'Batch B',
-    labSessionId: 'ls-502',
-    assignmentName: 'Java Programming Lab',
-    pastedCode: `import java.util.concurrent.Semaphore;
+export const INITIAL_MAKEUP_REQUESTS: MakeupLabRequest[] = [];
 
-class SharedResource {
-    static int count = 0;
-    static Semaphore sem = new Semaphore(1);
-    
-    void modify(String threadName) {
-        try {
-            System.out.println(threadName + " waiting for lock");
-            sem.acquire();
-            System.out.println(threadName + " acquired lock");
-            for(int i = 0; i < 5; i++) {
-                count++;
-                System.out.println(threadName + ": " + count);
-                Thread.sleep(100);
-            }
-        } catch(InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            System.out.println(threadName + " released lock");
-            sem.release();
-        }
-    }
-}`,
-    linesPasted: 28,
-    charactersPasted: 840,
-    timestamp: 'Today at 10:14:22 AM',
-    similarityScore: 88,
-    riskLevel: 'High',
-    matchedStudentName: 'Devika Rao',
-    matchedStudentUsn: '4GW24IS010',
-    matchedCode: `import java.util.concurrent.Semaphore;
-
-class SharedBuffer {
-    static int counter = 0;
-    static Semaphore lock = new Semaphore(1);
-    
-    void update(String name) {
-        try {
-            System.out.println(name + " waiting for lock");
-            lock.acquire();
-            System.out.println(name + " acquired lock");
-            for(int i = 0; i < 5; i++) {
-                counter++;
-                System.out.println(name + ": " + counter);
-                Thread.sleep(100);
-            }
-        } catch(InterruptedException err) {
-            err.printStackTrace();
-        } finally {
-            System.out.println(name + " released lock");
-            lock.release();
-        }
-    }
-}`,
-    matchedSourceDescription: 'Peer submission from Semester 5 Batch A buffer (88% AST & control flow alignment)',
-    structuralMetrics: {
-      tokenOverlapPercentage: 92,
-      controlFlowMatchPercentage: 96,
-      identicalBlockLength: 20,
-    },
-    status: 'Pending Review',
-    isSimulated: true,
-  },
-  {
-    id: 'int-02',
-    studentId: 'usr-student-3',
-    studentName: 'Ananya Sen',
-    usn: '4GW24IS012',
-    semesterNumber: 5,
-    batch: 'Batch A',
-    labSessionId: 'ls-501',
-    assignmentName: 'Python Programming Lab: Hash Mapping',
-    pastedCode: `def two_sum_hash(arr, target):
-    lookup = {}
-    for idx, val in enumerate(arr):
-        rem = target - val
-        if rem in lookup:
-            return [lookup[rem], idx]
-        lookup[val] = idx
-    return []`,
-    linesPasted: 9,
-    charactersPasted: 215,
-    timestamp: 'Today at 09:42:10 AM',
-    similarityScore: 64,
-    riskLevel: 'Medium',
-    matchedStudentName: 'Devika Rao',
-    matchedStudentUsn: '4GW24IS010',
-    matchedCode: INITIAL_EXPERIMENTS[0].starterCode,
-    matchedSourceDescription: 'Standard textbook algorithm implementation with common token sequencing',
-    structuralMetrics: {
-      tokenOverlapPercentage: 68,
-      controlFlowMatchPercentage: 74,
-      identicalBlockLength: 5,
-    },
-    status: 'Reviewed',
-    facultyRemarks: 'Standard optimal solution for Two Sum problem. Slight variable renaming observed, but represents standard textbook approach.',
-    facultyDecision: 'Legitimate Syntax / Common Algorithm',
-    reviewedBy: 'Dr. Arvind Kulkarni',
-    reviewedAt: 'Today at 09:55 AM',
-    isSimulated: true,
-  },
-  {
-    id: 'int-03',
-    studentId: 'usr-student-2a',
-    studentName: 'Keerthana M.',
-    usn: '4GW25IS010',
-    semesterNumber: 3,
-    batch: 'Batch A',
-    labSessionId: 'ls-301',
-    assignmentName: 'Data Structures Laboratory: Linked List',
-    pastedCode: `struct Node {
-    int data;
-    struct Node* next;
-};
-
-void printList(struct Node* n) {
-    while (n != NULL) {
-        printf("%d ", n->data);
-        n = n->next;
-    }
-}`,
-    linesPasted: 11,
-    charactersPasted: 168,
-    timestamp: 'Yesterday at 11:20:00 AM',
-    similarityScore: 32,
-    riskLevel: 'Low',
-    matchedSourceDescription: 'Standard C struct and traversal boilerplate from lab syllabus manual',
-    structuralMetrics: {
-      tokenOverlapPercentage: 42,
-      controlFlowMatchPercentage: 35,
-      identicalBlockLength: 4,
-    },
-    status: 'Dismissed False Positive',
-    facultyRemarks: 'Standard linked list struct and print helper from VTU lab manual. Not an integrity breach.',
-    facultyDecision: 'Dismissed as False Positive',
-    reviewedBy: 'Prof. Sunita Menon',
-    reviewedAt: 'Yesterday at 11:35 AM',
-    isSimulated: true,
-  },
-];
-
-export const INITIAL_FACULTY_NOTIFICATIONS: FacultyNotificationItem[] = [
-  {
-    id: 'fac-notif-1',
-    title: 'Suspicious Copy-Paste Activity Detected',
-    description: 'Sneha Patil [4GW24IS011] pasted a large code block (28 lines / 840 chars) in Java Programming Lab. Similarity: 88% (High Risk).',
-    category: 'integrity',
-    timestamp: 'Just now (10:14 AM)',
-    isRead: false,
-    priority: 'urgent',
-    studentName: 'Sneha Patil',
-    usn: '4GW24IS011',
-    assignmentName: 'Java Programming Lab',
-    riskLevel: 'High',
-    similarityScore: 88,
-    integrityAlertId: 'int-01',
-    isSimulated: true,
-  },
-  {
-    id: 'fac-notif-2',
-    title: 'Suspicious Copy-Paste Activity Detected',
-    description: 'Ananya Sen [4GW24IS012] pasted 9 lines in Python Programming Lab. Similarity: 64% (Medium Risk).',
-    category: 'integrity',
-    timestamp: 'Today at 09:42 AM',
-    isRead: false,
-    priority: 'important',
-    studentName: 'Ananya Sen',
-    usn: '4GW24IS012',
-    assignmentName: 'Python Programming Lab: Hash Mapping',
-    riskLevel: 'Medium',
-    similarityScore: 64,
-    integrityAlertId: 'int-02',
-    isSimulated: true,
-  },
-  {
-    id: 'fac-notif-3',
-    title: 'Lab Session Submission Milestone',
-    description: 'Devika Rao [4GW24IS010] completed and submitted Python Lab Slot 1 (Two Sum). Automatic AI score: 50/50 ready for faculty approval.',
-    category: 'submission',
-    timestamp: 'Today at 09:25 AM',
-    isRead: true,
-    priority: 'normal',
-    studentName: 'Devika Rao',
-    usn: '4GW24IS010',
-    assignmentName: 'Two Sum & Frequency Mapping in Python',
-  },
-  {
-    id: 'fac-notif-4',
-    title: 'Lab Session Schedule Initialized',
-    description: 'Laboratory session "Python Programming Slot 1" for Semester 5 Batch A successfully started. 30 student terminals connected.',
-    category: 'session',
-    timestamp: 'Today at 09:00 AM',
-    isRead: true,
-    priority: 'normal',
-  },
-];
 

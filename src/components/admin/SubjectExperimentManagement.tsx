@@ -82,8 +82,8 @@ export const SubjectExperimentManagement: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Curriculum Subjects & Experiments</h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Curriculum Subjects & Experiments</h1>
+          <p className="text-xs text-slate-600 mt-0.5">
             Maintain official syllabus laboratory subjects and curriculum experiments in C, Python, and Java
           </p>
         </div>
@@ -91,7 +91,7 @@ export const SubjectExperimentManagement: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowSubjectModal(true)}
-            className="py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs font-bold transition-colors flex items-center gap-1 border border-slate-700"
+            className="py-1.5 px-3 rounded-lg bg-blue-100 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-colors flex items-center gap-1 border border-blue-200"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Subject</span>
@@ -99,7 +99,7 @@ export const SubjectExperimentManagement: React.FC = () => {
 
           <button
             onClick={() => setShowExpModal(true)}
-            className="py-1.5 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center gap-1 shadow-md shadow-emerald-600/20"
+            className="py-1.5 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center gap-1 shadow-md shadow-blue-600/20"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Experiment</span>
@@ -108,11 +108,11 @@ export const SubjectExperimentManagement: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex rounded-lg bg-slate-900 border border-slate-800 p-1 w-fit">
+      <div className="flex rounded-lg bg-blue-50/60 border border-blue-100 p-1 w-fit">
         <button
           onClick={() => setActiveTab('experiments')}
           className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
-            activeTab === 'experiments' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-200'
+            activeTab === 'experiments' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:text-slate-800'
           }`}
         >
           Curriculum Experiments ({experiments.length})
@@ -120,7 +120,7 @@ export const SubjectExperimentManagement: React.FC = () => {
         <button
           onClick={() => setActiveTab('subjects')}
           className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
-            activeTab === 'subjects' ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-slate-200'
+            activeTab === 'subjects' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:text-slate-800'
           }`}
         >
           Laboratory Subjects ({subjects.length})
@@ -133,25 +133,25 @@ export const SubjectExperimentManagement: React.FC = () => {
           {filteredExperiments.map((exp) => (
             <div
               key={exp.id}
-              className="bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-3 shadow-md"
+              className="bg-white border border-blue-100 rounded-xl p-5 space-y-3 shadow-md"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <span className="text-[11px] font-mono font-bold text-sky-400">
+                  <span className="text-[11px] font-mono font-bold text-blue-600">
                     {exp.subjectCode} · Experiment #{exp.experimentNumber}
                   </span>
-                  <h3 className="text-sm font-bold text-white tracking-tight">{exp.title}</h3>
+                  <h3 className="text-sm font-bold text-slate-900 tracking-tight">{exp.title}</h3>
                 </div>
-                <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700">
+                <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-blue-50/60 text-slate-700 border border-blue-200">
                   {exp.programmingLanguage}
                 </span>
               </div>
 
-              <p className="text-xs text-slate-400 line-clamp-2">{exp.description}</p>
+              <p className="text-xs text-slate-600 line-clamp-2">{exp.description}</p>
 
-              <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+              <div className="pt-2 border-t border-blue-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
                 <span>{exp.testCases.length} Test Cases</span>
-                <span className="text-emerald-400 font-bold">Max Marks: {exp.maxMarks}</span>
+                <span className="text-emerald-600 font-bold">Max Marks: {exp.maxMarks}</span>
               </div>
             </div>
           ))}
@@ -164,19 +164,19 @@ export const SubjectExperimentManagement: React.FC = () => {
           {subjects.map((sub) => (
             <div
               key={sub.id}
-              className="bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-2 shadow-md"
+              className="bg-white border border-blue-100 rounded-xl p-5 space-y-2 shadow-md"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-base font-bold text-white font-mono">{sub.code}</span>
-                  <h3 className="text-xs font-semibold text-slate-200">{sub.name}</h3>
+                  <span className="text-base font-bold text-slate-900 font-mono">{sub.code}</span>
+                  <h3 className="text-xs font-semibold text-slate-800">{sub.name}</h3>
                 </div>
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-sky-300">
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">
                   Semester {sub.semesterNumber}
                 </span>
               </div>
-              <div className="pt-2 border-t border-slate-800 flex justify-between text-[11px] text-slate-400 font-mono">
-                <span>Language: <strong className="uppercase text-slate-200">{sub.primaryLanguage}</strong></span>
+              <div className="pt-2 border-t border-blue-100 flex justify-between text-[11px] text-slate-600 font-mono">
+                <span>Language: <strong className="uppercase text-slate-800">{sub.primaryLanguage}</strong></span>
                 <span>Credits: {sub.credits}</span>
               </div>
             </div>
@@ -186,41 +186,41 @@ export const SubjectExperimentManagement: React.FC = () => {
 
       {/* Add Subject Modal */}
       {showSubjectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md bg-[#0e1738] border border-slate-700 rounded-2xl p-6 space-y-4">
-            <h3 className="font-bold text-white text-base">Add Laboratory Course</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md bg-white border border-blue-200 rounded-2xl p-6 space-y-4">
+            <h3 className="font-bold text-slate-900 text-base">Add Laboratory Course</h3>
             <form onSubmit={handleAddSubject} className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-300 block mb-1">Subject Code</label>
+                <label className="font-semibold text-slate-700 block mb-1">Subject Code</label>
                 <input
                   type="text"
                   required
                   value={subCode}
                   onChange={(e) => setSubCode(e.target.value)}
                   placeholder="CS505"
-                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 font-mono text-xs focus:outline-hidden focus:border-sky-500"
+                  className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 font-mono text-xs focus:outline-hidden focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-300 block mb-1">Subject Title</label>
+                <label className="font-semibold text-slate-700 block mb-1">Subject Title</label>
                 <input
                   type="text"
                   required
                   value={subName}
                   onChange={(e) => setSubName(e.target.value)}
                   placeholder="e.g. Database Systems Laboratory"
-                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs focus:outline-hidden focus:border-sky-500"
+                  className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs focus:outline-hidden focus:border-blue-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-300 block mb-1">Semester</label>
+                  <label className="font-semibold text-slate-700 block mb-1">Semester</label>
                   <select
                     value={subSem}
                     onChange={(e) => setSubSem(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs focus:outline-hidden focus:border-sky-500 font-mono"
+                    className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs focus:outline-hidden focus:border-blue-500 font-mono"
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
                       <option key={s} value={s}>Semester {s}</option>
@@ -229,11 +229,11 @@ export const SubjectExperimentManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-300 block mb-1">Primary Runtime</label>
+                  <label className="font-semibold text-slate-700 block mb-1">Primary Runtime</label>
                   <select
                     value={subLang}
                     onChange={(e) => setSubLang(e.target.value as SupportedLanguage)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-mono focus:outline-hidden focus:border-sky-500 uppercase"
+                    className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs font-mono focus:outline-hidden focus:border-blue-500 uppercase"
                   >
                     <option value="c">C</option>
                     <option value="python">Python</option>
@@ -246,13 +246,13 @@ export const SubjectExperimentManagement: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowSubjectModal(false)}
-                  className="py-1.5 px-3 rounded-lg bg-slate-800 text-slate-300 font-semibold"
+                  className="py-1.5 px-3 rounded-lg bg-blue-100 text-slate-700 font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="py-1.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold"
+                  className="py-1.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold"
                 >
                   Create Subject
                 </button>
@@ -264,29 +264,29 @@ export const SubjectExperimentManagement: React.FC = () => {
 
       {/* Add Experiment Modal */}
       {showExpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md bg-[#0e1738] border border-slate-700 rounded-2xl p-6 space-y-4">
-            <h3 className="font-bold text-white text-base">Add Curriculum Experiment</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md bg-white border border-blue-200 rounded-2xl p-6 space-y-4">
+            <h3 className="font-bold text-slate-900 text-base">Add Curriculum Experiment</h3>
             <form onSubmit={handleAddExperiment} className="space-y-3 text-xs">
               <div>
-                <label className="font-semibold text-slate-300 block mb-1">Experiment Title</label>
+                <label className="font-semibold text-slate-700 block mb-1">Experiment Title</label>
                 <input
                   type="text"
                   required
                   value={expTitle}
                   onChange={(e) => setExpTitle(e.target.value)}
                   placeholder="e.g. Graph Breadth First Search"
-                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs focus:outline-hidden focus:border-emerald-500"
+                  className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs focus:outline-hidden focus:border-emerald-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-300 block mb-1">Subject</label>
+                  <label className="font-semibold text-slate-700 block mb-1">Subject</label>
                   <select
                     value={expSubId}
                     onChange={(e) => setExpSubId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs focus:outline-hidden focus:border-emerald-500"
+                    className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs focus:outline-hidden focus:border-emerald-500"
                   >
                     {subjects.map((s) => (
                       <option key={s.id} value={s.id}>{s.code}</option>
@@ -295,11 +295,11 @@ export const SubjectExperimentManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-300 block mb-1">Language</label>
+                  <label className="font-semibold text-slate-700 block mb-1">Language</label>
                   <select
                     value={expLang}
                     onChange={(e) => setExpLang(e.target.value as SupportedLanguage)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-mono focus:outline-hidden focus:border-emerald-500 uppercase"
+                    className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs font-mono focus:outline-hidden focus:border-emerald-500 uppercase"
                   >
                     <option value="c">C</option>
                     <option value="python">Python</option>
@@ -309,37 +309,37 @@ export const SubjectExperimentManagement: React.FC = () => {
               </div>
 
               <div>
-                <label className="font-semibold text-slate-300 block mb-1">Short Description</label>
+                <label className="font-semibold text-slate-700 block mb-1">Short Description</label>
                 <textarea
                   rows={2}
                   required
                   value={expDesc}
                   onChange={(e) => setExpDesc(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs focus:outline-hidden focus:border-emerald-500"
+                  className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs focus:outline-hidden focus:border-emerald-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-300 block mb-1 font-mono">Sample STDIN</label>
+                  <label className="font-semibold text-slate-700 block mb-1 font-mono">Sample STDIN</label>
                   <input
                     type="text"
                     required
                     value={expInput}
                     onChange={(e) => setExpInput(e.target.value)}
                     placeholder="4\n1 2 3 4"
-                    className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 font-mono text-xs focus:outline-hidden focus:border-emerald-500"
+                    className="w-full px-3 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 font-mono text-xs focus:outline-hidden focus:border-emerald-500"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-slate-300 block mb-1 font-mono">Sample STDOUT</label>
+                  <label className="font-semibold text-slate-700 block mb-1 font-mono">Sample STDOUT</label>
                   <input
                     type="text"
                     required
                     value={expOutput}
                     onChange={(e) => setExpOutput(e.target.value)}
                     placeholder="10"
-                    className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 font-mono text-xs focus:outline-hidden focus:border-emerald-500"
+                    className="w-full px-3 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 font-mono text-xs focus:outline-hidden focus:border-emerald-500"
                   />
                 </div>
               </div>
@@ -348,7 +348,7 @@ export const SubjectExperimentManagement: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowExpModal(false)}
-                  className="py-1.5 px-3 rounded-lg bg-slate-800 text-slate-300 font-semibold"
+                  className="py-1.5 px-3 rounded-lg bg-blue-100 text-slate-700 font-semibold"
                 >
                   Cancel
                 </button>

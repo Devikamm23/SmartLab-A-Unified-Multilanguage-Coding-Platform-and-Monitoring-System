@@ -33,19 +33,6 @@ export interface AssignmentDeadline {
   labSessionId?: string;
 }
 
-export interface FacultyAnnouncement {
-  id: string;
-  title: string;
-  facultyName: string;
-  facultyDesignation: string;
-  department: string;
-  content: string;
-  dateTime: string;
-  priority: 'Normal' | 'Important' | 'Urgent';
-  targetSemester: number;
-  targetBatch: string;
-}
-
 export interface SubjectAttendance {
   subjectCode: string;
   subjectName: string;
@@ -92,7 +79,7 @@ export const INITIAL_NOTIFICATIONS: StudentNotification[] = [
   {
     id: 'notif-asg-1',
     title: 'New Assignment Published by Faculty',
-    message: 'Dr. Arvind Kulkarni published "Experiment 2: Balanced Parentheses Verification using Stack in Python" for Semester 5 Batch A.',
+    message: 'Dr Girish S C published "Experiment 2: Balanced Parentheses Verification using Stack in Python" for Semester 5 Batch A.',
     category: 'assignment',
     subCategory: 'new_assignment',
     timestamp: '25 mins ago',
@@ -199,7 +186,7 @@ export const INITIAL_NOTIFICATIONS: StudentNotification[] = [
   {
     id: 'notif-lab-6',
     title: 'Lab Attendance & Performance Update',
-    message: 'Monthly laboratory attendance synchronized: 6 of 7 practical sessions attended (85.7% overall attendance). Academic eligibility status: Eligible.',
+    message: 'IS504 laboratory attendance synchronized: 10 of 12 practical sessions attended (83.3% attendance). Academic eligibility status: Eligible.',
     category: 'lab',
     subCategory: 'attendance_performance',
     timestamp: 'Nov 02, 2026',
@@ -231,7 +218,7 @@ export const INITIAL_NOTIFICATIONS: StudentNotification[] = [
   {
     id: 'notif-ann-3',
     title: 'New Instructions from Faculty',
-    message: 'Dr. Arvind Kulkarni: Please ensure recursive functions include explicit base-case terminations to avoid stack overflow errors.',
+    message: 'Dr Girish S C: Please ensure recursive functions include explicit base-case terminations to avoid stack overflow errors.',
     category: 'announcement',
     subCategory: 'faculty_instruction',
     timestamp: 'Oct 28, 2026',
@@ -256,7 +243,7 @@ export const INITIAL_DEADLINES: AssignmentDeadline[] = [
     assignmentName: 'Two Sum & Frequency Mapping in Python',
     subjectCode: 'IS504',
     subjectName: 'Python Programming & Scripting Laboratory',
-    facultyName: 'Dr. Arvind Kulkarni',
+    facultyName: 'Dr Girish S C',
     assignedDate: '2026-11-01',
     submissionDeadline: '2026-11-08 17:00',
     remainingTime: '18 hours remaining',
@@ -269,7 +256,7 @@ export const INITIAL_DEADLINES: AssignmentDeadline[] = [
     assignmentName: 'Balanced Parentheses Verification Stack',
     subjectCode: 'IS504',
     subjectName: 'Python Programming & Scripting Laboratory',
-    facultyName: 'Dr. Arvind Kulkarni',
+    facultyName: 'Dr Girish S C',
     assignedDate: '2026-11-03',
     submissionDeadline: '2026-11-12 16:30',
     remainingTime: '4 days remaining',
@@ -303,90 +290,20 @@ export const INITIAL_DEADLINES: AssignmentDeadline[] = [
   },
 ];
 
-export const INITIAL_FACULTY_ANNOUNCEMENTS: FacultyAnnouncement[] = [
-  {
-    id: 'fa-1',
-    title: 'Mid-Term Lab Practical Evaluation & Code Review Protocol',
-    facultyName: 'Dr. Arvind Kulkarni',
-    facultyDesignation: 'Associate Professor & Lab In-Charge',
-    department: 'Department of Information Science & Engineering',
-    content: `All Semester 5 students must submit their complete laboratory journal programs before Friday 5:00 PM. The evaluation will consist of:
-1. Live execution of 1 random experiment chosen by faculty.
-2. Answering viva-voce questions on time/space complexity analysis.
-3. Code cleanliness, indentation, and adherence to academic integrity protocols.
-Students with zero clipboard security violations will receive +5 bonus evaluation marks.`,
-    dateTime: '2026-11-05 10:30 AM',
-    priority: 'Urgent',
-    targetSemester: 5,
-    targetBatch: 'All Batches (A, B, C)',
-  },
-  {
-    id: 'fa-2',
-    title: 'Code Sandbox Upgrade: Judge0 CE Compiler Engine Active',
-    facultyName: 'Prof. Sunita Menon',
-    facultyDesignation: 'Assistant Professor & Lab Coordinator',
-    department: 'Department of Information Science & Engineering',
-    content: `The SmartLab platform has been provisioned with the latest GNU GCC 11.2, Python 3.11.2, and OpenJDK 17 runtimes. Please ensure standard libraries only are utilized. Arbitrary native system calls remain restricted for institutional safety.`,
-    dateTime: '2026-11-03 02:15 PM',
-    priority: 'Important',
-    targetSemester: 5,
-    targetBatch: 'Batch A',
-  },
-  {
-    id: 'fa-3',
-    title: 'Guest Lecture: Modern Algorithmic Profiling in High-Scale Systems',
-    facultyName: 'Dr. Arvind Kulkarni',
-    facultyDesignation: 'Associate Professor & Lab In-Charge',
-    department: 'Department of Information Science & Engineering',
-    content: `A technical session with senior industry architects will be held in Seminar Hall 1 on Saturday from 11:00 AM to 1:00 PM. Attendance is compulsory for all 3rd and 4th year engineering students.`,
-    dateTime: '2026-10-30 11:00 AM',
-    priority: 'Normal',
-    targetSemester: 5,
-    targetBatch: 'All Batches',
-  },
-];
-
 export const INITIAL_ATTENDANCE: AttendanceSummary = {
-  totalClasses: 48,
-  classesAttended: 44,
-  classesMissed: 4,
-  overallPercentage: 91.67,
+  totalClasses: 12,
+  classesAttended: 10,
+  classesMissed: 2,
+  overallPercentage: 83.3,
   subjects: [
     {
       subjectCode: 'IS504',
       subjectName: 'Python Programming & Scripting Laboratory',
-      totalClasses: 14,
-      attended: 13,
-      missed: 1,
-      percentage: 92.86,
-      facultyInCharge: 'Dr. Arvind Kulkarni',
-    },
-    {
-      subjectCode: 'IS502',
-      subjectName: 'Java Enterprise Architecture Laboratory',
       totalClasses: 12,
-      attended: 11,
-      missed: 1,
-      percentage: 91.67,
-      facultyInCharge: 'Prof. Sunita Menon',
-    },
-    {
-      subjectCode: 'IS501',
-      subjectName: 'Database Management Systems & SQL Lab',
-      totalClasses: 12,
-      attended: 12,
-      missed: 0,
-      percentage: 100.0,
-      facultyInCharge: 'Prof. Rajesh Verma',
-    },
-    {
-      subjectCode: 'IS503',
-      subjectName: 'Computer Networks & Packet Simulation Lab',
-      totalClasses: 10,
-      attended: 8,
+      attended: 10,
       missed: 2,
-      percentage: 80.0,
-      facultyInCharge: 'Prof. Sunita Menon',
+      percentage: 83.3,
+      facultyInCharge: 'Dr Girish S C',
     },
   ],
 };

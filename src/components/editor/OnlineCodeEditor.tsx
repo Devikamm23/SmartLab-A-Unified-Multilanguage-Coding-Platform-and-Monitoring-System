@@ -8,7 +8,6 @@ import {
   Play,
   Send,
   RotateCcw,
-  Sliders,
   Trash2,
   Clock,
   Cpu,
@@ -16,10 +15,12 @@ import {
   CheckCircle2,
   XCircle,
   FileText,
-  ChevronDown,
-  ChevronUp,
   ShieldAlert,
   Lock,
+  ArrowLeft,
+  Terminal,
+  Sliders,
+  X,
 } from 'lucide-react';
 
 interface OnlineCodeEditorProps {
@@ -34,20 +35,30 @@ export const OnlineCodeEditor: React.FC<OnlineCodeEditorProps> = ({ onOpenJudge0
     studentLabSessions,
     activeLabSessionId,
     setActiveLabSessionId,
+    setActiveNavTab,
     trackEditorInteraction,
     recordCodeRun,
     recordClipboardAttempt,
     updateActiveCode,
     submitLabProgram,
-    sessionRemainingSeconds,
-    totalSessionMinutes,
+    studentLabTimerSeconds,
     handlePasteEvent,
     canStudentExecute,
     setStudentCompiling,
     activeBatchSession,
   } = useApp();
 
-  const executionGate = canStudentExecute(currentUser);
+  // Find active session
+  const currentLabSession =
+    labSessions.find((ls) => ls.id === activeLabSessionId) || labSessions[0];
+  const currentExperiment = experiments.find(
+    (e) => e.id === currentLabSession?.experimentId
+  );
+  const currentStudentSession = studentLabSessions.find(
+    (s) => s.studentId === currentUser?.id && s.labSessionId === currentLabSession?.id
+  );
+
+  const executionGate = canStudentExecute(currentUser, currentLabSession?.id);
 
   const editorRef = useRef<any>(null);
 
@@ -62,15 +73,8 @@ export const OnlineCodeEditor: React.FC<OnlineCodeEditorProps> = ({ onOpenJudge0
     similarityScore: number;
   } | null>(null);
 
-  // Find active session
-  const currentLabSession =
-    labSessions.find((ls) => ls.id === activeLabSessionId) || labSessions[0];
-  const currentExperiment = experiments.find(
-    (e) => e.id === currentLabSession?.experimentId
-  );
-  const currentStudentSession = studentLabSessions.find(
-    (s) => s.studentId === currentUser?.id && s.labSessionId === currentLabSession?.id
-  );
+  // Problem Question Modal (replaces LeetCode split-pane sidebar)
+  const [isProblemModalOpen, setIsProblemModalOpen] = useState(false);
 
   // Editor states
   const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>(
@@ -81,9 +85,8 @@ export const OnlineCodeEditor: React.FC<OnlineCodeEditorProps> = ({ onOpenJudge0
       currentExperiment?.starterCode ||
       SUPPORTED_LANGUAGES[selectedLanguage].defaultBoilerplate
   );
-  const [isProblemOpen, setIsProblemOpen] = useState(true);
 
-  // Consoles
+  // Right Terminal Panel states
   const [stdin, setStdin] = useState<string>('');
   const [stdout, setStdout] = useState<string>('');
   const [stderr, setStderr] = useState<string>('');
@@ -98,8 +101,8 @@ export const OnlineCodeEditor: React.FC<OnlineCodeEditorProps> = ({ onOpenJudge0
   const [memoryUsage, setMemoryUsage] = useState<number | null>(null);
   const [clipboardAlertMsg, setClipboardAlertMsg] = useState<string | null>(null);
 
-  // Tab in bottom console: 'output' | 'input' | 'testcases'
-  const [activeConsoleTab, setActiveConsoleTab] = useState<'output' | 'input' | 'testcases'>('output');
+  // Right Terminal Tab: 'terminal' | 'testcases'
+  const [activeTerminalTab, setActiveTerminalTab] = useState<'terminal' | 'testcases'>('terminal');
 
   // Submit test cases results
   const [submissionResults, setSubmissionResults] = useState<TestCaseResult[] | null>(null);
@@ -135,11 +138,14 @@ export const OnlineCodeEditor: React.FC<OnlineCodeEditorProps> = ({ onOpenJudge0
     updateActiveCode(newCode);
   };
 
-  // Monaco editor mount handler with onDidPaste listener
+  // Monaco editor mount handler with onDidPaste & onKeyDown listeners
   const handleEditorDidMount = (editor: any) => {
     editorRef.current = editor;
 
-    // Listen for paste event directly in Monaco
+    editor.onKeyDown(() => {
+      trackEditorInteraction(true);
+    });
+
     editor.onDidPaste((e: any) => {
       const model = editor.getModel();
       if (model && e.range) {
@@ -147,7 +153,6 @@ export const OnlineCodeEditor: React.FC<OnlineCodeEditorProps> = ({ onOpenJudge0
         const lines = pastedContent.split('\n').length;
         const chars = pastedContent.length;
 
-        // Perform AI Code Similarity & Copy-Paste Analysis
         const comp = handlePasteEvent(pastedContent, lines, chars);
         if (comp && comp.isSuspicious) {
           setStudentWarningModal({
@@ -166,7 +171,6 @@ export const OnlineCodeEditor: React.FC<OnlineCodeEditorProps> = ({ onOpenJudge0
 
   // Keyboard shortcut listener
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    // Only intercept Cut or Copy if copy/paste restriction is active
     if (isCopyPasteRestricted && (e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'x')) {
       e.preventDefault();
       e.stopPropagation();
@@ -181,7 +185,7 @@ export const OnlineCodeEditor: React.FC<OnlineCodeEditorProps> = ({ onOpenJudge0
     }
   };
 
-  // Live demonstration helper: simulates student pasting an external code block
+  // Simulate paste demonstration
   const triggerTestBulkPaste = () => {
     const testSnippet = `import java.util.concurrent.Semaphore;
 
@@ -235,7 +239,13 @@ class SharedResource {
     return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  // Clear consoles
+  const getTerminalCommand = () => {
+    if (selectedLanguage === 'c') return 'gcc main.c -o main && ./main';
+    if (selectedLanguage === 'java') return 'javac Main.java && java Main';
+    return 'python3 main.py';
+  };
+
+  // Clear terminal output
   const handleClearConsoles = () => {
     setStdout('');
     setStderr('');
@@ -261,14 +271,14 @@ class SharedResource {
     if (!executionGate.allowed) {
       setStderr(executionGate.reason || 'Execution is locked for your batch.');
       setExecutionStatus('Batch Locked');
-      setActiveConsoleTab('output');
+      setActiveTerminalTab('terminal');
       return;
     }
 
     setIsRunning(true);
     setStudentCompiling(true);
-    setExecutionStatus('Compiling & Executing...');
-    setActiveConsoleTab('output');
+    setExecutionStatus('Running...');
+    setActiveTerminalTab('terminal');
     setStdout('');
     setStderr('');
     setCompileOutput('');
@@ -308,14 +318,14 @@ class SharedResource {
     if (!executionGate.allowed) {
       setStderr(executionGate.reason || 'Submission & execution are locked for your batch.');
       setExecutionStatus('Batch Locked');
-      setActiveConsoleTab('output');
+      setActiveTerminalTab('terminal');
       return;
     }
 
     setIsSubmitting(true);
     setStudentCompiling(true);
     setExecutionStatus('Grading Test Suite...');
-    setActiveConsoleTab('testcases');
+    setActiveTerminalTab('testcases');
     setStdout('');
     setStderr('');
     setCompileOutput('');
@@ -364,48 +374,66 @@ class SharedResource {
   return (
     <div
       onKeyDown={handleKeyDown}
-      className="h-[calc(100vh-4rem)] flex flex-col bg-[#070b19] overflow-hidden select-none"
+      className="h-screen w-full flex flex-col bg-[#f4f8ff] overflow-hidden select-none"
     >
-      {/* Top Editor Toolbar */}
-      <div className="h-12 bg-[#0e1738] border-b border-slate-800 px-4 flex items-center justify-between gap-3 shrink-0">
-        {/* Left: Problem Details Toggle & Lab Session Picker */}
-        <div className="flex items-center gap-3">
+      {/* Top Full-Page Lab Workspace Header */}
+      <header className="h-14 bg-white border-b border-blue-100 px-4 flex items-center justify-between gap-3 shrink-0">
+        {/* Left: Exit to Dashboard + Session Selector + Experiment Details button */}
+        <div className="flex items-center gap-3 min-w-0">
           <button
-            onClick={() => setIsProblemOpen(!isProblemOpen)}
-            className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-              isProblemOpen
-                ? 'bg-slate-800 text-sky-300 border border-slate-700'
-                : 'bg-slate-900 text-slate-400 hover:text-white'
-            }`}
+            type="button"
+            onClick={() => setActiveNavTab('dashboard')}
+            className="px-3 py-1.5 rounded-lg bg-blue-50/60 hover:bg-blue-100 border border-blue-200 text-xs font-semibold text-slate-800 hover:text-slate-900 flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer"
           >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Experiment Guide</span>
-            {isProblemOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            <ArrowLeft className="w-3.5 h-3.5 text-blue-600" />
+            <span>Back to Dashboard</span>
           </button>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-slate-400 hidden sm:inline">Session:</span>
+          <div className="hidden sm:flex items-center gap-2 min-w-0">
             <select
               value={activeLabSessionId || ''}
               onChange={(e) => setActiveLabSessionId(e.target.value)}
-              className="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs font-semibold text-slate-200 focus:outline-hidden focus:border-sky-500 max-w-[200px] sm:max-w-xs truncate"
+              className="px-2.5 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200 text-xs font-semibold text-slate-800 focus:outline-hidden focus:border-blue-500 max-w-[240px] lg:max-w-xs truncate"
             >
-              {labSessions.map((ls) => (
-                <option key={ls.id} value={ls.id}>
-                  {ls.subjectCode} · {ls.batch}: {ls.experimentName}
-                </option>
-              ))}
+              {labSessions
+                .filter(
+                  (ls) =>
+                    !ls.isMakeup ||
+                    currentUser?.role !== 'student' ||
+                    ls.allowedStudentIds?.includes(currentUser.id)
+                )
+                .map((ls) => (
+                  <option key={ls.id} value={ls.id}>
+                    {ls.isMakeup ? '[Makeup Lab] ' : `${ls.subjectCode}: `}
+                    {ls.experimentName}
+                  </option>
+                ))}
             </select>
+
+            {executionGate.isMakeupAccess && (
+              <span className="hidden xl:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-700 border border-blue-300 shrink-0">
+                Makeup Lab
+              </span>
+            )}
           </div>
+
+          <button
+            type="button"
+            onClick={() => setIsProblemModalOpen(true)}
+            className="px-2.5 py-1.5 rounded-lg bg-blue-50/60 hover:bg-blue-100 border border-blue-200 text-xs font-semibold text-blue-700 flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Program Aim & Instructions</span>
+            <span className="md:hidden">Aim</span>
+          </button>
         </div>
 
-        {/* Center: Language Selector (C, Python, Java) */}
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-slate-400 hidden md:inline">Language:</span>
+        {/* Right: Language, Timer, Status, Run & Submit */}
+        <div className="flex items-center gap-2 shrink-0">
           <select
             value={selectedLanguage}
             onChange={(e) => setSelectedLanguage(e.target.value as SupportedLanguage)}
-            className="px-3 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs font-bold text-sky-300 font-mono focus:outline-hidden focus:border-sky-500"
+            className="px-2.5 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200 text-xs font-bold text-blue-700 font-mono focus:outline-hidden focus:border-blue-500"
           >
             <option value="c">C (GCC 11.2)</option>
             <option value="python">Python (3.11.2)</option>
@@ -413,42 +441,40 @@ class SharedResource {
           </select>
 
           <button
+            type="button"
             onClick={handleResetCode}
-            className="p-1 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors"
+            className="p-1.5 rounded-lg bg-blue-50/60 hover:bg-blue-100 text-slate-600 hover:text-slate-900 border border-blue-100 transition-colors cursor-pointer"
             title="Reset to starter code"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
           <button
-            onClick={handleClearConsoles}
-            className="p-1 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors"
-            title="Clear output console"
+            type="button"
+            onClick={onOpenJudge0Modal}
+            className="hidden sm:flex p-1.5 rounded-lg bg-blue-50/60 hover:bg-blue-100 text-slate-600 hover:text-blue-700 border border-blue-100 transition-colors cursor-pointer"
+            title="Compiler Settings"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Sliders className="w-3.5 h-3.5" />
           </button>
-        </div>
 
-        {/* Right: Actions & Session Countdown */}
-        <div className="flex items-center gap-2.5">
-          {/* Lab Session Remaining Timer & Activity Status */}
+          {/* Lab Timer & Activity Status */}
           <div className="hidden lg:flex items-center gap-2 font-mono text-xs">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-900 border border-slate-700 text-sky-300">
-              <Clock className="w-3.5 h-3.5 text-sky-400" />
-              <span className="font-bold tabular-nums">{formatCountdown(sessionRemainingSeconds)}</span>
-              <span className="text-[10px] text-slate-400">/ {totalSessionMinutes}m</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200 text-blue-700">
+              <Clock className="w-3.5 h-3.5 text-blue-600" />
+              <span className="font-bold tabular-nums">{formatCountdown(studentLabTimerSeconds)}</span>
             </div>
             <span
-              className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+              className={`px-2 py-1 rounded-md text-[10px] font-bold border ${
                 currentStudentSession?.activityStatus === 'Typing'
-                  ? 'bg-emerald-950 text-emerald-400 border-emerald-500/40'
+                  ? 'bg-emerald-50 text-emerald-600 border-emerald-300'
                   : currentStudentSession?.activityStatus === 'Compiling' || isRunning || isSubmitting
-                  ? 'bg-orange-950 text-orange-400 border-orange-500/40'
+                  ? 'bg-orange-50 text-orange-600 border-orange-300'
                   : currentStudentSession?.activityStatus === 'Submitted'
-                  ? 'bg-purple-950 text-purple-300 border-purple-500/40'
+                  ? 'bg-blue-50 text-blue-700 border-blue-300'
                   : currentStudentSession?.activityStatus === 'Idle'
-                  ? 'bg-amber-950 text-amber-400 border-amber-500/40'
-                  : 'bg-sky-950 text-sky-400 border-sky-500/40'
+                  ? 'bg-amber-50 text-amber-600 border-amber-300'
+                  : 'bg-blue-50 text-blue-600 border-blue-300'
               }`}
             >
               {isRunning || isSubmitting
@@ -457,54 +483,74 @@ class SharedResource {
             </span>
           </div>
 
-          {isCopyPasteRestricted && (
-            <div className="hidden xl:flex items-center gap-1 text-[11px] font-mono text-amber-400 bg-amber-950/40 border border-amber-500/30 px-2 py-1 rounded">
-              <Lock className="w-3 h-3" />
-              <span>Copy/Paste Locked</span>
-            </div>
-          )}
-
           <button
+            type="button"
             onClick={triggerTestBulkPaste}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-950/70 hover:bg-purple-900 border border-purple-500/40 text-purple-300 text-xs font-mono transition-colors shadow-xs"
-            title="Simulate student pasting a 28-line code block to demonstrate real-time AI integrity detection and faculty alerts"
+            className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-300 text-blue-700 text-xs font-mono transition-colors cursor-pointer"
+            title="Simulate external code paste"
           >
-            <ShieldAlert className="w-3.5 h-3.5 text-purple-400" />
+            <ShieldAlert className="w-3.5 h-3.5 text-blue-600" />
             <span>Simulate Paste</span>
           </button>
 
           <button
+            type="button"
             onClick={handleRunCode}
             disabled={!executionGate.allowed || isRunning || isSubmitting}
-            title={!executionGate.allowed ? executionGate.reason : 'Compile and execute code'}
-            className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-semibold transition-colors flex items-center gap-1.5 border border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+            title={!executionGate.allowed ? executionGate.reason : 'Run program in right terminal'}
+            className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs cursor-pointer"
           >
-            <Play className={`w-3.5 h-3.5 text-emerald-400 ${isRunning ? 'animate-spin' : ''}`} />
-            <span>{isRunning ? 'Compiling...' : 'Run Code'}</span>
+            <Play className={`w-3.5 h-3.5 fill-current ${isRunning ? 'animate-spin' : ''}`} />
+            <span>{isRunning ? 'Running...' : 'Run'}</span>
           </button>
 
           <button
+            type="button"
             onClick={handleSubmitCode}
             disabled={!executionGate.allowed || isRunning || isSubmitting}
-            title={!executionGate.allowed ? executionGate.reason : 'Submit code for evaluation'}
-            className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-emerald-600/20"
+            title={!executionGate.allowed ? executionGate.reason : 'Submit lab program'}
+            className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-600/20 cursor-pointer"
           >
             <Send className={`w-3.5 h-3.5 ${isSubmitting ? 'animate-pulse' : ''}`} />
-            <span>{isSubmitting ? 'Grading...' : 'Submit Lab'}</span>
+            <span>{isSubmitting ? 'Submitting...' : 'Submit Lab'}</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* One-Active-Batch Execution Gate Notice */}
+      {/* Compact Experiment Banner */}
+      {currentExperiment && (
+        <div className="bg-[#f4f8ff] border-b border-blue-100 px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="font-mono font-bold text-blue-600 px-2 py-0.5 rounded bg-blue-50 border border-blue-200 shrink-0">
+              {currentExperiment.subjectCode} · Exp #{currentExperiment.experimentNumber}
+            </span>
+            <span className="font-semibold text-slate-900 truncate">
+              {currentExperiment.title}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] font-mono text-slate-600 shrink-0">
+            <span>Max Marks: <strong className="text-emerald-600">{currentExperiment.maxMarks}</strong></span>
+            {isCopyPasteRestricted && (
+              <span className="inline-flex items-center gap-1 text-amber-600">
+                <Lock className="w-3 h-3" />
+                Copy/Paste Locked
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Batch Execution Lock Notice */}
       {!executionGate.allowed && (
-        <div className="bg-amber-950/80 border-b border-amber-500/40 px-4 py-2 text-amber-200 text-xs flex flex-wrap items-center justify-between gap-2 z-30">
+        <div className="bg-amber-50 border-b border-amber-300 px-4 py-2 text-amber-900 text-xs flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+            <Lock className="w-4 h-4 text-amber-600 shrink-0" />
             <span className="font-semibold">{executionGate.reason}</span>
           </div>
           {activeBatchSession && (
-            <span className="text-[11px] font-mono text-amber-300 bg-black/30 px-2 py-0.5 rounded border border-amber-500/30">
-              Active Batch: Sem {activeBatchSession.semesterNumber} {activeBatchSession.batch} · {formatCountdown(sessionRemainingSeconds)} left
+            <span className="text-[11px] font-mono text-amber-700 bg-blue-100/80 px-2 py-0.5 rounded border border-amber-200">
+              Active Batch: Sem {activeBatchSession.semesterNumber} {activeBatchSession.batch}
             </span>
           )}
         </div>
@@ -512,126 +558,36 @@ class SharedResource {
 
       {/* Copy-Paste Violation Alert Banner */}
       {clipboardAlertMsg && (
-        <div className="bg-rose-950/90 border-b border-rose-500/50 px-4 py-2 text-rose-200 text-xs flex items-center justify-between z-30">
+        <div className="bg-rose-50 border-b border-rose-300 px-4 py-2 text-rose-800 text-xs flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+            <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
             <span className="font-semibold">{clipboardAlertMsg}</span>
           </div>
-          <span className="text-[10px] font-mono text-rose-300">Recorded to Teacher Log</span>
+          <span className="text-[10px] font-mono text-rose-700">Recorded to Faculty Log</span>
         </div>
       )}
 
-      {/* Main Workspace Body */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Side: Collapsible Problem & Experiment Guide */}
-        {isProblemOpen && currentExperiment && (
-          <div className="w-80 lg:w-96 bg-[#090f22] border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto p-4 text-xs space-y-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">
-                  {currentExperiment.subjectCode}
-                </span>
-                <span className="text-slate-400 text-[11px]">
-                  Exp #{currentExperiment.experimentNumber}
-                </span>
-              </div>
-              <h2 className="text-base font-bold text-white tracking-tight">
-                {currentExperiment.title}
-              </h2>
-              <div className="text-[11px] text-slate-400 mt-1 font-mono">
-                Max Marks: <strong className="text-emerald-400">{currentExperiment.maxMarks}</strong> · Sem {currentLabSession?.semesterNumber} ({currentLabSession?.batch})
-              </div>
-            </div>
-
-            {/* Problem Statement */}
-            <div className="space-y-1.5 text-slate-300 leading-relaxed">
-              <h3 className="font-bold text-slate-200 uppercase text-[10px] tracking-wider font-mono">
-                Problem Description
-              </h3>
-              <p className="whitespace-pre-line text-slate-300">{currentExperiment.problemStatement}</p>
-            </div>
-
-            {/* Formats */}
-            <div className="space-y-2">
-              <div>
-                <h4 className="font-bold text-slate-200 uppercase text-[10px] tracking-wider font-mono">
-                  Input Format
-                </h4>
-                <div className="p-2 rounded bg-slate-900 border border-slate-800 font-mono text-[11px] text-slate-300 whitespace-pre-line">
-                  {currentExperiment.inputFormat}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-slate-200 uppercase text-[10px] tracking-wider font-mono">
-                  Output Format
-                </h4>
-                <div className="p-2 rounded bg-slate-900 border border-slate-800 font-mono text-[11px] text-slate-300 whitespace-pre-line">
-                  {currentExperiment.outputFormat}
-                </div>
-              </div>
-            </div>
-
-            {/* Constraints */}
-            <div className="space-y-1.5">
-              <h4 className="font-bold text-slate-200 uppercase text-[10px] tracking-wider font-mono">
-                Constraints
-              </h4>
-              <ul className="space-y-1 font-mono text-[11px] text-slate-400 list-disc list-inside">
-                {currentExperiment.constraints.map((c, idx) => (
-                  <li key={idx}>{c}</li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Sample Test Cases */}
-            <div className="space-y-2 pt-2 border-t border-slate-800">
-              <h4 className="font-bold text-slate-200 uppercase text-[10px] tracking-wider font-mono">
-                Sample Test Cases
-              </h4>
-              {currentExperiment.testCases
-                .filter((tc) => !tc.isHidden)
-                .map((tc, idx) => (
-                  <div key={tc.id} className="p-2.5 rounded bg-slate-900 border border-slate-800 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-300 text-[11px]">
-                        Sample #{idx + 1}
-                      </span>
-                      <button
-                        onClick={() => {
-                          setStdin(tc.input);
-                          setActiveConsoleTab('input');
-                        }}
-                        className="text-[10px] text-sky-400 hover:text-sky-300 font-medium"
-                      >
-                        Copy to STDIN
-                      </button>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500 font-mono block">Input:</span>
-                      <pre className="font-mono text-[11px] text-slate-300 bg-[#070b19] p-1.5 rounded overflow-x-auto">
-                        {tc.input}
-                      </pre>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-500 font-mono block">Expected Output:</span>
-                      <pre className="font-mono text-[11px] text-emerald-400 bg-[#070b19] p-1.5 rounded overflow-x-auto">
-                        {tc.expectedOutput}
-                      </pre>
-                    </div>
-                  </div>
-                ))}
-            </div>
+      {/* Main Split Workspace: LEFT = Code Editor, RIGHT = Terminal */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        {/* LEFT: Code Editor */}
+        <div className="flex-1 min-w-0 min-h-[300px] flex flex-col bg-white">
+          <div className="h-9 bg-white border-b border-blue-100 px-4 flex items-center justify-between text-xs font-mono text-slate-600 shrink-0">
+            <span>
+              {selectedLanguage === 'c'
+                ? 'main.c'
+                : selectedLanguage === 'java'
+                ? 'Main.java'
+                : 'main.py'}
+            </span>
+            <span className="text-[11px] text-slate-500">
+              {SUPPORTED_LANGUAGES[selectedLanguage].name}
+            </span>
           </div>
-        )}
 
-        {/* Center: Monaco Editor & Consoles */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Monaco Editor Container */}
-          <div className="flex-1 relative bg-[#0b132b]">
+          <div className="flex-1 relative">
             <Editor
               height="100%"
-              theme="vs-dark"
+              theme="light"
               language={SUPPORTED_LANGUAGES[selectedLanguage].monacoLang}
               value={code}
               onChange={handleEditorChange}
@@ -645,237 +601,348 @@ class SharedResource {
                 automaticLayout: true,
                 tabSize: 4,
                 lineNumbers: 'on',
-                contextmenu: !isCopyPasteRestricted, // disable right-click context menu when restricted!
-                padding: { top: 12, bottom: 12 },
+                contextmenu: !isCopyPasteRestricted,
+                padding: { top: 14, bottom: 14 },
               }}
             />
           </div>
+        </div>
 
-          {/* Console Ribbon */}
-          <div className="h-9 bg-[#0e1738] border-t border-slate-800 px-4 flex items-center justify-between text-xs text-slate-400">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 font-mono">
-                <span className="text-slate-500 text-[11px]">Status:</span>
-                <span
-                  className={`font-bold ${
-                    executionStatus === 'Accepted'
-                      ? 'text-emerald-400'
-                      : executionStatus.includes('Error')
-                      ? 'text-rose-400'
-                      : executionStatus === 'Ready'
-                      ? 'text-slate-300'
-                      : 'text-amber-400'
-                  }`}
-                >
-                  {executionStatus}
-                </span>
-              </div>
-
-              {executionTime && (
-                <div className="hidden sm:flex items-center gap-1 font-mono text-[11px]">
-                  <Clock className="w-3 h-3 text-slate-500" />
-                  <span className="tabular-nums">{executionTime}s</span>
-                </div>
-              )}
-
-              {memoryUsage && (
-                <div className="hidden md:flex items-center gap-1 font-mono text-[11px]">
-                  <Cpu className="w-3 h-3 text-slate-500" />
-                  <span className="tabular-nums">{(memoryUsage / 1024).toFixed(1)} MB</span>
-                </div>
-              )}
+        {/* RIGHT: Dedicated Lab Terminal */}
+        <aside className="w-full lg:w-[440px] xl:w-[500px] h-[340px] lg:h-auto shrink-0 bg-[#f4f8ff] border-t lg:border-t-0 lg:border-l border-blue-100 flex flex-col overflow-hidden">
+          {/* Terminal Title Header */}
+          <div className="h-9 bg-white border-b border-blue-100 px-3.5 flex items-center justify-between text-xs shrink-0">
+            <div className="flex items-center gap-2 font-mono">
+              <Terminal className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="font-bold text-slate-800">Terminal</span>
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                  executionStatus === 'Accepted'
+                    ? 'bg-emerald-50 text-emerald-600'
+                    : executionStatus.includes('Error') || executionStatus === 'Batch Locked'
+                    ? 'bg-rose-50 text-rose-600'
+                    : executionStatus === 'Ready'
+                    ? 'bg-blue-100 text-slate-700'
+                    : 'bg-amber-50 text-amber-700'
+                }`}
+              >
+                {executionStatus}
+              </span>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <button
-                onClick={() => setActiveConsoleTab('output')}
-                className={`px-2.5 py-0.5 rounded text-[11px] font-semibold transition-colors ${
-                  activeConsoleTab === 'output' ? 'bg-slate-800 text-sky-300' : 'text-slate-400 hover:text-slate-200'
+                type="button"
+                onClick={() => setActiveTerminalTab('terminal')}
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
+                  activeTerminalTab === 'terminal'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-slate-600 hover:text-slate-800'
                 }`}
               >
-                Output Console
+                Console
               </button>
               <button
-                onClick={() => setActiveConsoleTab('input')}
-                className={`px-2.5 py-0.5 rounded text-[11px] font-semibold transition-colors ${
-                  activeConsoleTab === 'input' ? 'bg-slate-800 text-sky-300' : 'text-slate-400 hover:text-slate-200'
+                type="button"
+                onClick={() => setActiveTerminalTab('testcases')}
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
+                  activeTerminalTab === 'testcases'
+                    ? 'bg-blue-100 text-emerald-700'
+                    : 'text-slate-600 hover:text-slate-800'
                 }`}
               >
-                Standard Input (STDIN)
+                Tests {submissionResults ? `(${submissionResults.filter((r) => r.passed).length}/${submissionResults.length})` : ''}
               </button>
               <button
-                onClick={() => setActiveConsoleTab('testcases')}
-                className={`px-2.5 py-0.5 rounded text-[11px] font-semibold transition-colors ${
-                  activeConsoleTab === 'testcases' ? 'bg-slate-800 text-emerald-300' : 'text-slate-400 hover:text-slate-200'
-                }`}
+                type="button"
+                onClick={handleClearConsoles}
+                className="p-1 rounded hover:bg-blue-100 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                title="Clear terminal"
               >
-                Test Cases Suite {submissionResults ? `(${submissionResults.filter(r => r.passed).length}/${submissionResults.length})` : ''}
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          {/* Bottom Console Drawer */}
-          <div className="h-44 bg-[#090f22] border-t border-slate-800 p-3 overflow-y-auto text-xs font-mono">
-            {/* Output tab */}
-            {activeConsoleTab === 'output' && (
-              <div className="h-full flex flex-col space-y-2">
+          {/* Terminal Body */}
+          {activeTerminalTab === 'terminal' ? (
+            <div className="flex-1 flex flex-col overflow-hidden font-mono text-xs">
+              {/* Terminal Output Scroll Area */}
+              <div className="flex-1 p-3.5 overflow-y-auto space-y-3 bg-[#f4f8ff]">
+                <div className="text-[11px] text-slate-600 flex items-center gap-1.5">
+                  <span className="text-emerald-600 font-bold">student@smartlab:~$</span>
+                  <span className="text-slate-800">{getTerminalCommand()}</span>
+                </div>
+
                 {compileOutput && (
-                  <div className="p-2.5 rounded bg-rose-950/40 border border-rose-500/40 text-rose-300 whitespace-pre-wrap">
-                    <div className="font-bold text-[11px] text-rose-400 mb-1 flex items-center gap-1">
+                  <div className="p-2.5 rounded bg-rose-50 border border-rose-300 text-rose-700 whitespace-pre-wrap">
+                    <div className="font-bold text-[11px] text-rose-600 mb-1 flex items-center gap-1">
                       <AlertTriangle className="w-3.5 h-3.5" />
-                      <span>Compilation Diagnostics:</span>
+                      <span>Compilation Error:</span>
                     </div>
                     {compileOutput}
                   </div>
                 )}
 
                 {stderr && !compileOutput && (
-                  <div className="p-2.5 rounded bg-rose-950/40 border border-rose-500/40 text-rose-300 whitespace-pre-wrap">
-                    <div className="font-bold text-[11px] text-rose-400 mb-1">Standard Error (stderr):</div>
+                  <div className="p-2.5 rounded bg-rose-50 border border-rose-300 text-rose-700 whitespace-pre-wrap">
+                    <div className="font-bold text-[11px] text-rose-600 mb-1">stderr:</div>
                     {stderr}
                   </div>
                 )}
 
                 {stdout ? (
-                  <div>
-                    <div className="text-[10px] text-slate-500 mb-1">Standard Output (stdout):</div>
-                    <pre className="text-emerald-300 whitespace-pre-wrap">{stdout}</pre>
-                  </div>
+                  <pre className="text-emerald-700 whitespace-pre-wrap leading-relaxed">
+                    {stdout}
+                  </pre>
                 ) : (
                   !compileOutput &&
                   !stderr && (
-                    <div className="text-slate-500 italic py-2">
-                      Click "Run Code" to compile and execute against current input, or "Submit Lab" to evaluate all test cases.
-                    </div>
+                    <p className="text-slate-500 italic text-[11px]">
+                      Ready. Enter program input below if required, then click Run.
+                    </p>
                   )
                 )}
 
-                {executionEngineNotice && (
-                  <div className="mt-auto pt-2 text-[10px] text-slate-500 flex items-center justify-between border-t border-slate-800/80">
-                    <span>Engine: {executionEngineNotice}</span>
-                    <span>Air-Gapped: Program executed in isolated container sandbox</span>
+                {(executionTime || memoryUsage || executionEngineNotice) && (
+                  <div className="pt-2 border-t border-blue-100 text-[10px] text-slate-600 flex flex-wrap items-center gap-x-4 gap-y-1">
+                    {executionTime && (
+                      <span className="inline-flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-slate-500" />
+                        {executionTime}s
+                      </span>
+                    )}
+                    {memoryUsage && (
+                      <span className="inline-flex items-center gap-1">
+                        <Cpu className="w-3 h-3 text-slate-500" />
+                        {(memoryUsage / 1024).toFixed(1)} MB
+                      </span>
+                    )}
+                    {executionEngineNotice && (
+                      <span className="text-slate-500 ml-auto">{executionEngineNotice}</span>
+                    )}
                   </div>
                 )}
               </div>
-            )}
 
-            {/* Input tab */}
-            {activeConsoleTab === 'input' && (
-              <div className="h-full flex flex-col space-y-2">
-                <div className="flex items-center justify-between text-slate-400 text-[11px]">
-                  <span>Enter Standard Input (stdin) fed to your program:</span>
-                  <button onClick={() => setStdin('')} className="text-slate-500 hover:text-slate-300">
-                    Clear Input
+              {/* Terminal Input (STDIN) Docked at Bottom of Right Terminal */}
+              <div className="border-t border-blue-100 bg-[#f4f8ff] p-3 space-y-1.5 shrink-0">
+                <div className="flex items-center justify-between text-[11px] text-slate-600">
+                  <span className="font-semibold text-slate-700">Program Input (STDIN)</span>
+                  <button
+                    type="button"
+                    onClick={() => setStdin('')}
+                    className="text-slate-500 hover:text-slate-700 cursor-pointer"
+                  >
+                    Clear
                   </button>
                 </div>
                 <textarea
+                  rows={3}
                   value={stdin}
                   onChange={(e) => setStdin(e.target.value)}
-                  className="flex-1 w-full bg-[#070b19] border border-slate-800 rounded p-2 text-slate-200 font-mono text-xs focus:outline-hidden focus:border-sky-500 resize-none"
-                  placeholder="Paste or type test input..."
+                  className="w-full bg-[#f4f8ff] border border-blue-100 rounded-lg p-2 text-slate-800 font-mono text-xs focus:outline-hidden focus:border-blue-500 resize-none"
+                  placeholder="Enter standard input values here..."
                 />
               </div>
-            )}
-
-            {/* Test cases tab */}
-            {activeConsoleTab === 'testcases' && (
-              <div className="space-y-3">
-                {submissionResults ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                    {submissionResults.map((tc) => (
-                      <div
-                        key={tc.testCaseId}
-                        className={`p-2.5 rounded-lg border text-xs ${
-                          tc.passed
-                            ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-200'
-                            : 'bg-rose-950/20 border-rose-500/30 text-rose-200'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="font-bold flex items-center gap-1.5">
-                            {tc.passed ? (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                            ) : (
-                              <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                            )}
-                            <span>Test Case #{tc.index} {tc.isHidden ? '(Hidden)' : '(Visible)'}</span>
-                          </span>
-                          <span className="text-[10px] font-mono text-slate-400">{tc.executionTime}s</span>
-                        </div>
-                        {!tc.isHidden ? (
-                          <div className="space-y-1 text-[11px] font-mono">
-                            <div className="text-slate-400">In: <span className="text-slate-200">{tc.input.replace(/\n/g, ' ')}</span></div>
-                            <div className="text-slate-400">Exp: <span className="text-emerald-400">{tc.expectedOutput.replace(/\n/g, ' ')}</span></div>
-                            <div className="text-slate-400">Out: <span className={tc.passed ? 'text-emerald-400' : 'text-rose-400'}>{tc.actualOutput.replace(/\n/g, ' ') || '(no output)'}</span></div>
-                          </div>
+            </div>
+          ) : (
+            /* Test Cases Evaluation View inside Right Terminal */
+            <div className="flex-1 p-3.5 overflow-y-auto space-y-2.5 bg-[#f4f8ff] text-xs font-mono">
+              {submissionResults ? (
+                submissionResults.map((tc) => (
+                  <div
+                    key={tc.testCaseId}
+                    className={`p-3 rounded-lg border space-y-1.5 ${
+                      tc.passed
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                        : 'bg-rose-50 border-rose-200 text-rose-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold flex items-center gap-1.5">
+                        {tc.passed ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                         ) : (
-                          <div className="text-[11px] text-slate-400 italic">Hidden verification test vector.</div>
+                          <XCircle className="w-3.5 h-3.5 text-rose-600" />
                         )}
+                        <span>
+                          Test #{tc.index} {tc.isHidden ? '(Hidden)' : ''}
+                        </span>
+                      </span>
+                      <span className="text-[10px] text-slate-600">{tc.executionTime}s</span>
+                    </div>
+
+                    {!tc.isHidden ? (
+                      <div className="space-y-1 text-[11px]">
+                        <div className="text-slate-600">
+                          In: <span className="text-slate-800">{tc.input.replace(/\n/g, ' ')}</span>
+                        </div>
+                        <div className="text-slate-600">
+                          Expected: <span className="text-emerald-600">{tc.expectedOutput.replace(/\n/g, ' ')}</span>
+                        </div>
+                        <div className="text-slate-600">
+                          Output:{' '}
+                          <span className={tc.passed ? 'text-emerald-600' : 'text-rose-600'}>
+                            {tc.actualOutput.replace(/\n/g, ' ') || '(no output)'}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-slate-600 italic">Hidden verification test case.</p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-slate-500 italic py-8 text-center">
+                  Click &quot;Submit Lab&quot; to evaluate all test cases.
+                </div>
+              )}
+            </div>
+          )}
+        </aside>
+      </div>
+
+      {/* Program Aim & Instructions Modal */}
+      {isProblemModalOpen && currentExperiment && (
+        <div
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50"
+          onClick={() => setIsProblemModalOpen(false)}
+        >
+          <div
+            className="bg-white border border-blue-200 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden text-xs"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 border-b border-blue-100 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-mono font-bold text-blue-600 uppercase block">
+                  {currentExperiment.subjectCode} · Experiment #{currentExperiment.experimentNumber}
+                </span>
+                <h3 className="text-base font-bold text-slate-900">{currentExperiment.title}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsProblemModalOpen(false)}
+                className="p-1.5 rounded-lg bg-blue-50/60 hover:bg-blue-100 text-slate-600 hover:text-slate-900 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4">
+              <div className="space-y-1">
+                <h4 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider font-mono">
+                  Problem Statement
+                </h4>
+                <p className="text-slate-800 leading-relaxed whitespace-pre-line">
+                  {currentExperiment.problemStatement}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <h4 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider font-mono mb-1">
+                    Input Format
+                  </h4>
+                  <div className="p-2.5 rounded-lg bg-blue-50/60 border border-blue-100 font-mono text-[11px] text-slate-700 whitespace-pre-line">
+                    {currentExperiment.inputFormat}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider font-mono mb-1">
+                    Output Format
+                  </h4>
+                  <div className="p-2.5 rounded-lg bg-blue-50/60 border border-blue-100 font-mono text-[11px] text-slate-700 whitespace-pre-line">
+                    {currentExperiment.outputFormat}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-700 uppercase text-[10px] tracking-wider font-mono mb-1.5">
+                  Sample Input & Output
+                </h4>
+                <div className="space-y-2">
+                  {currentExperiment.testCases
+                    .filter((tc) => !tc.isHidden)
+                    .map((tc, idx) => (
+                      <div key={tc.id} className="p-3 rounded-lg bg-blue-50/60 border border-blue-100 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-700">Sample #{idx + 1}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStdin(tc.input);
+                              setActiveTerminalTab('terminal');
+                              setIsProblemModalOpen(false);
+                            }}
+                            className="text-[11px] text-blue-600 hover:text-blue-700 font-semibold cursor-pointer"
+                          >
+                            Load Input into Terminal
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-[11px]">
+                          <pre className="bg-[#f4f8ff] p-2 rounded text-slate-700 overflow-x-auto">{tc.input}</pre>
+                          <pre className="bg-[#f4f8ff] p-2 rounded text-emerald-600 overflow-x-auto">{tc.expectedOutput}</pre>
+                        </div>
                       </div>
                     ))}
-                  </div>
-                ) : (
-                  <div className="text-slate-500 italic py-4 text-center">
-                    Click "Submit Lab" to evaluate all test cases and log final marks.
-                  </div>
-                )}
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* STUDENT WARNING NOTIFICATION MODAL: Academic Integrity Alert */}
       {studentWarningModal?.isOpen && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-[#0e1738] border border-amber-500/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 text-slate-200">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white border border-amber-300 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 text-slate-800">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
                 <ShieldAlert className="w-5 h-5" />
               </div>
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-white tracking-tight">Academic Integrity Alert</h3>
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/30">
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">Academic Integrity Alert</h3>
+                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
                     Warning Issued
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600">
                   Automated telemetry alert generated by SmartLab Academic Integrity Engine
                 </p>
               </div>
             </div>
 
-            {/* Prompt's exact mandatory message */}
-            <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-500/20 text-xs text-amber-200/90 leading-relaxed">
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed">
               &quot;Unusual copy-paste activity has been detected in your coding session. Please ensure that your submitted code represents your own work.&quot;
             </div>
 
-            {/* Event Details Grid */}
-            <div className="grid grid-cols-2 gap-2.5 p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono">
+            <div className="grid grid-cols-2 gap-2.5 p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 text-xs font-mono">
               <div>
                 <span className="text-[10px] text-slate-500 uppercase block">Date & Time</span>
-                <span className="text-slate-200 font-bold">{studentWarningModal.timestamp}</span>
+                <span className="text-slate-800 font-bold">{studentWarningModal.timestamp}</span>
               </div>
               <div>
                 <span className="text-[10px] text-slate-500 uppercase block">Warning Status</span>
-                <span className="text-amber-400 font-bold">Active Warning</span>
+                <span className="text-amber-600 font-bold">Active Warning</span>
               </div>
-              <div className="col-span-2 pt-1 border-t border-slate-800">
+              <div className="col-span-2 pt-1 border-t border-blue-100">
                 <span className="text-[10px] text-slate-500 uppercase block">Assignment Name</span>
-                <span className="text-sky-300 truncate block font-sans font-semibold">
+                <span className="text-blue-700 truncate block font-sans font-semibold">
                   {studentWarningModal.assignmentName}
                 </span>
               </div>
-              <div className="col-span-2 pt-1 border-t border-slate-800">
+              <div className="col-span-2 pt-1 border-t border-blue-100">
                 <span className="text-[10px] text-slate-500 uppercase block">Activity Details</span>
-                <span className="text-slate-300 font-sans text-[11px] block">
+                <span className="text-slate-700 font-sans text-[11px] block">
                   Pasted {studentWarningModal.linesPasted} lines ({studentWarningModal.charsPasted} characters) from an external clipboard buffer.
                 </span>
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-400 leading-normal italic">
+            <p className="text-[11px] text-slate-600 leading-normal italic">
               *Notice: Similarity indicators are recorded for faculty review, not automatic punishment. Faculty members review the code logic before making any academic evaluation.
             </p>
 
@@ -883,7 +950,7 @@ class SharedResource {
               <button
                 type="button"
                 onClick={() => setStudentWarningModal(null)}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-colors shadow-md shadow-amber-600/20"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-colors shadow-md shadow-amber-600/20 cursor-pointer"
               >
                 I Acknowledge & Understand
               </button>

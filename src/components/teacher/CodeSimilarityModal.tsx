@@ -61,35 +61,35 @@ export const CodeSimilarityModal: React.FC<CodeSimilarityModalProps> = ({
   const getRiskBadge = (risk: string) => {
     switch (risk) {
       case 'High':
-        return 'bg-rose-950 text-rose-300 border-rose-500/40';
+        return 'bg-rose-50 text-rose-700 border-rose-300';
       case 'Medium':
-        return 'bg-amber-950 text-amber-300 border-amber-500/40';
+        return 'bg-amber-50 text-amber-700 border-amber-300';
       case 'Low':
       default:
-        return 'bg-sky-950 text-sky-300 border-sky-500/40';
+        return 'bg-blue-50 text-blue-700 border-blue-300';
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-      <div className="bg-[#0e1738] border border-slate-800 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
+      <div className="bg-white border border-blue-100 rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl text-slate-900 overflow-hidden">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between gap-4 bg-slate-950/40 shrink-0">
+        <div className="p-5 border-b border-blue-100 flex items-center justify-between gap-4 bg-blue-50/50 shrink-0">
           <div className="flex items-center gap-3">
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold border ${
                 alert.riskLevel === 'High'
-                  ? 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                  ? 'bg-rose-50 border-rose-200 text-rose-600'
                   : alert.riskLevel === 'Medium'
-                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
-                  : 'bg-sky-500/15 border-sky-500/30 text-sky-400'
+                  ? 'bg-amber-50 border-amber-200 text-amber-600'
+                  : 'bg-blue-50 border-blue-200 text-blue-600'
               }`}
             >
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white tracking-tight">
+                <h2 className="text-base font-bold text-slate-900 tracking-tight">
                   Academic Integrity Inspection & Code Similarity Analysis
                 </h2>
                 <span
@@ -100,7 +100,7 @@ export const CodeSimilarityModal: React.FC<CodeSimilarityModalProps> = ({
                   {alert.riskLevel} Risk ({alert.similarityScore}% Similarity)
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600">
                 {COLLEGE_CONFIG.name} · Department of {COLLEGE_CONFIG.department}
               </p>
             </div>
@@ -108,7 +108,7 @@ export const CodeSimilarityModal: React.FC<CodeSimilarityModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-blue-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -118,38 +118,38 @@ export const CodeSimilarityModal: React.FC<CodeSimilarityModalProps> = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Student & Event Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs font-mono">
-            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+            <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 space-y-1">
               <span className="text-[10px] text-slate-500 uppercase block font-sans">Student Profile</span>
-              <div className="font-sans font-bold text-slate-200 text-sm truncate">
+              <div className="font-sans font-bold text-slate-800 text-sm truncate">
                 {alert.studentName}
               </div>
-              <div className="text-emerald-400 font-bold">{alert.usn}</div>
-              <div className="text-[11px] text-slate-400">Sem {alert.semesterNumber} · {alert.batch}</div>
+              <div className="text-emerald-600 font-bold">{alert.usn}</div>
+              <div className="text-[11px] text-slate-600">Sem {alert.semesterNumber} · {alert.batch}</div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+            <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 space-y-1">
               <span className="text-[10px] text-slate-500 uppercase block font-sans">Assignment Details</span>
-              <div className="font-sans font-semibold text-slate-200 truncate">
+              <div className="font-sans font-semibold text-slate-800 truncate">
                 {alert.assignmentName}
               </div>
-              <div className="text-slate-400 text-[11px]">Lab Slot #{alert.labSessionId}</div>
-              <div className="text-sky-400 text-[11px]">Monaco Buffer Inspection</div>
+              <div className="text-slate-600 text-[11px]">Lab Slot #{alert.labSessionId}</div>
+              <div className="text-blue-600 text-[11px]">Monaco Buffer Inspection</div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+            <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 space-y-1">
               <span className="text-[10px] text-slate-500 uppercase block font-sans">Copy-Paste Metrics</span>
-              <div className="text-white font-bold text-sm">
+              <div className="text-slate-900 font-bold text-sm">
                 {alert.linesPasted} Lines Pasted
               </div>
-              <div className="text-slate-400 text-[11px]">{alert.charactersPasted} Characters</div>
-              <div className="text-slate-400 text-[11px]">{alert.timestamp}</div>
+              <div className="text-slate-600 text-[11px]">{alert.charactersPasted} Characters</div>
+              <div className="text-slate-600 text-[11px]">{alert.timestamp}</div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+            <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 space-y-1">
               <span className="text-[10px] text-slate-500 uppercase block font-sans">Review Status</span>
-              <div className="font-bold text-amber-400">{alert.status}</div>
+              <div className="font-bold text-amber-600">{alert.status}</div>
               {alert.reviewedBy && (
-                <div className="text-[11px] text-slate-400 truncate font-sans">
+                <div className="text-[11px] text-slate-600 truncate font-sans">
                   By: {alert.reviewedBy}
                 </div>
               )}
@@ -160,28 +160,28 @@ export const CodeSimilarityModal: React.FC<CodeSimilarityModalProps> = ({
           </div>
 
           {/* AI Structural Similarity Metrics Strip */}
-          <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/30 space-y-2">
+          <div className="p-4 rounded-xl bg-blue-50/20 border border-blue-200 space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-indigo-300 font-semibold text-xs font-mono">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
+              <div className="flex items-center gap-2 text-blue-700 font-semibold text-xs font-mono">
+                <Sparkles className="w-4 h-4 text-blue-600" />
                 <span>AI-Based Code Structural Correlation Breakdown</span>
               </div>
-              <span className="text-xs font-mono font-bold text-white">
-                Composite Score: <strong className="text-emerald-400">{alert.similarityScore}%</strong>
+              <span className="text-xs font-mono font-bold text-slate-900">
+                Composite Score: <strong className="text-emerald-600">{alert.similarityScore}%</strong>
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1 font-mono">
-              <div className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1">
-                <div className="flex justify-between text-slate-400 text-[11px]">
+              <div className="p-2.5 rounded-lg bg-[#f4f8ff] border border-blue-100 space-y-1">
+                <div className="flex justify-between text-slate-600 text-[11px]">
                   <span>Token n-Gram Overlap</span>
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-slate-900">
                     {alert.structuralMetrics?.tokenOverlapPercentage ?? 85}%
                   </span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-blue-100 rounded-full h-1.5 overflow-hidden">
                   <div
-                    className="bg-indigo-500 h-full rounded-full"
+                    className="bg-blue-500 h-full rounded-full"
                     style={{
                       width: `${alert.structuralMetrics?.tokenOverlapPercentage ?? 85}%`,
                     }}
@@ -189,16 +189,16 @@ export const CodeSimilarityModal: React.FC<CodeSimilarityModalProps> = ({
                 </div>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1">
-                <div className="flex justify-between text-slate-400 text-[11px]">
+              <div className="p-2.5 rounded-lg bg-[#f4f8ff] border border-blue-100 space-y-1">
+                <div className="flex justify-between text-slate-600 text-[11px]">
                   <span>Control Flow Skeleton Match</span>
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-slate-900">
                     {alert.structuralMetrics?.controlFlowMatchPercentage ?? 80}%
                   </span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-blue-100 rounded-full h-1.5 overflow-hidden">
                   <div
-                    className="bg-indigo-500 h-full rounded-full"
+                    className="bg-blue-500 h-full rounded-full"
                     style={{
                       width: `${alert.structuralMetrics?.controlFlowMatchPercentage ?? 80}%`,
                     }}
@@ -206,16 +206,16 @@ export const CodeSimilarityModal: React.FC<CodeSimilarityModalProps> = ({
                 </div>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1">
-                <div className="flex justify-between text-slate-400 text-[11px]">
+              <div className="p-2.5 rounded-lg bg-[#f4f8ff] border border-blue-100 space-y-1">
+                <div className="flex justify-between text-slate-600 text-[11px]">
                   <span>Longest Contiguous Block</span>
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-slate-900">
                     {alert.structuralMetrics?.identicalBlockLength ?? 12} lines
                   </span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-blue-100 rounded-full h-1.5 overflow-hidden">
                   <div
-                    className="bg-indigo-500 h-full rounded-full"
+                    className="bg-blue-500 h-full rounded-full"
                     style={{
                       width: `${Math.min(
                         100,
@@ -227,56 +227,56 @@ export const CodeSimilarityModal: React.FC<CodeSimilarityModalProps> = ({
               </div>
             </div>
 
-            <div className="text-[11px] text-slate-400 leading-normal pt-1 font-sans">
-              Matched Source: <strong className="text-slate-200">{alert.matchedSourceDescription}</strong>
+            <div className="text-[11px] text-slate-600 leading-normal pt-1 font-sans">
+              Matched Source: <strong className="text-slate-800">{alert.matchedSourceDescription}</strong>
             </div>
           </div>
 
           {/* Side-by-Side Code Comparison */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold text-white font-mono">
-                <GitCompare className="w-4 h-4 text-sky-400" />
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 font-mono">
+                <GitCompare className="w-4 h-4 text-blue-600" />
                 <span>Side-by-Side Code Comparison</span>
               </div>
-              <span className="text-[11px] text-slate-400 font-mono">
+              <span className="text-[11px] text-slate-600 font-mono">
                 Flagged Paste ({alert.linesPasted} lines) vs. Reference / Cohort Candidate
               </span>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Left Column: Student's Pasted Buffer */}
-              <div className="rounded-xl border border-slate-800 bg-[#070b19] overflow-hidden">
-                <div className="px-3.5 py-2 border-b border-slate-800 bg-slate-900/90 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-rose-300 flex items-center gap-1.5">
-                    <FileCode2 className="w-3.5 h-3.5 text-rose-400" />
+              <div className="rounded-xl border border-blue-100 bg-[#f4f8ff] overflow-hidden">
+                <div className="px-3.5 py-2 border-b border-blue-100 bg-[#f4f8ff] flex items-center justify-between text-xs">
+                  <span className="font-semibold text-rose-700 flex items-center gap-1.5">
+                    <FileCode2 className="w-3.5 h-3.5 text-rose-600" />
                     <span>{alert.studentName}&apos;s Pasted Code</span>
                   </span>
-                  <span className="font-mono text-[10px] text-slate-400">
+                  <span className="font-mono text-[10px] text-slate-600">
                     USN: {alert.usn}
                   </span>
                 </div>
-                <pre className="p-4 font-mono text-[11px] text-slate-300 overflow-x-auto max-h-72 leading-relaxed selection:bg-rose-950">
+                <pre className="p-4 font-mono text-[11px] text-slate-700 overflow-x-auto max-h-72 leading-relaxed selection:bg-rose-50">
                   {alert.pastedCode}
                 </pre>
               </div>
 
               {/* Right Column: Matched Candidate / Peer Solution */}
-              <div className="rounded-xl border border-slate-800 bg-[#070b19] overflow-hidden">
-                <div className="px-3.5 py-2 border-b border-slate-800 bg-slate-900/90 flex items-center justify-between text-xs">
-                  <span className="font-semibold text-sky-300 flex items-center gap-1.5">
-                    <FileCode2 className="w-3.5 h-3.5 text-sky-400" />
+              <div className="rounded-xl border border-blue-100 bg-[#f4f8ff] overflow-hidden">
+                <div className="px-3.5 py-2 border-b border-blue-100 bg-[#f4f8ff] flex items-center justify-between text-xs">
+                  <span className="font-semibold text-blue-700 flex items-center gap-1.5">
+                    <FileCode2 className="w-3.5 h-3.5 text-blue-600" />
                     <span>
                       {alert.matchedStudentName
                         ? `Peer: ${alert.matchedStudentName} [${alert.matchedStudentUsn}]`
                         : 'Cohort Reference Solution'}
                     </span>
                   </span>
-                  <span className="font-mono text-[10px] text-emerald-400 font-bold">
+                  <span className="font-mono text-[10px] text-emerald-600 font-bold">
                     {alert.similarityScore}% Match
                   </span>
                 </div>
-                <pre className="p-4 font-mono text-[11px] text-slate-300 overflow-x-auto max-h-72 leading-relaxed selection:bg-sky-950">
+                <pre className="p-4 font-mono text-[11px] text-slate-700 overflow-x-auto max-h-72 leading-relaxed selection:bg-blue-50">
                   {alert.matchedCode || `// Comparison against standard curriculum algorithmic pattern:
 ${alert.pastedCode}`}
                 </pre>
@@ -285,28 +285,28 @@ ${alert.pastedCode}`}
           </div>
 
           {/* Academic Integrity Policy Reminder */}
-          <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 flex items-start gap-2.5 text-xs text-slate-400">
-            <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 flex items-start gap-2.5 text-xs text-slate-600">
+            <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
               <strong>Academic Integrity Policy Notice:</strong> A similarity score or copy-paste detection alone is an indicator for faculty inspection, not automatic proof of plagiarism. Students may legitimately write similar solutions for common curriculum experiments. Faculty discretion determines the final evaluation.
             </p>
           </div>
 
           {/* Faculty Review & Final Decision Section */}
-          <div className="p-5 rounded-xl bg-slate-900 border border-slate-800 space-y-4">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+          <div className="p-5 rounded-xl bg-blue-50/60 border border-blue-100 space-y-4">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
               Faculty Adjudication & Action Record
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-300 font-medium block">
+                <label className="text-xs text-slate-700 font-medium block">
                   Final Decision:
                 </label>
                 <select
                   value={decision}
                   onChange={(e) => setDecision(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs font-semibold text-white focus:outline-hidden focus:border-sky-500"
+                  className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-xs font-semibold text-slate-900 focus:outline-hidden focus:border-blue-500"
                 >
                   <option value="Legitimate Syntax / Common Algorithm">
                     Legitimate Syntax / Common Algorithm (No Penalty)
@@ -327,7 +327,7 @@ ${alert.pastedCode}`}
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-300 font-medium block">
+                <label className="text-xs text-slate-700 font-medium block">
                   Faculty Review Remarks:
                 </label>
                 <textarea
@@ -335,16 +335,16 @@ ${alert.pastedCode}`}
                   onChange={(e) => setRemarks(e.target.value)}
                   placeholder="Enter observation notes, code differentiation points, or counseling remarks..."
                   rows={2}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs text-slate-200 placeholder-slate-500 focus:outline-hidden focus:border-sky-500"
+                  className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-xs text-slate-800 placeholder-slate-500 focus:outline-hidden focus:border-blue-500"
                 />
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-blue-100">
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition-colors"
+                className="px-4 py-2 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-700 text-xs font-semibold border border-blue-200 transition-colors"
               >
                 Dismiss as False Positive
               </button>
@@ -353,16 +353,16 @@ ${alert.pastedCode}`}
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
+                  className="px-4 py-2 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-700 text-xs font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleSave}
-                  className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
+                  className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
                 >
-                  {saveSuccess ? <Check className="w-4 h-4 text-emerald-300" /> : <Save className="w-4 h-4" />}
+                  {saveSuccess ? <Check className="w-4 h-4 text-emerald-700" /> : <Save className="w-4 h-4" />}
                   <span>{saveSuccess ? 'Decision Saved' : 'Save Final Decision'}</span>
                 </button>
               </div>

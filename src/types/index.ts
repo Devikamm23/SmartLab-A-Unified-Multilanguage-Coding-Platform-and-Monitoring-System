@@ -123,6 +123,8 @@ export interface LabSession {
   startedAt?: string;
   endedAt?: string;
   createdAt: string;
+  isMakeup?: boolean;
+  allowedStudentIds?: string[];
 }
 
 export type StudentActivityStatus = 'Typing' | 'Compiling' | 'Idle' | 'Viewing' | 'Absent' | 'Submitted';
@@ -351,4 +353,27 @@ export interface QuizAttempt {
   totalMarks: number;
   submittedAt: string;
   timeTakenMinutes: number;
+}
+
+export interface MakeupLabRequest {
+  id: string;
+  studentId: string;
+  studentName: string;
+  usn: string;
+  semesterNumber: number;
+  batch: BatchName;
+  experimentId: string;
+  experimentName: string;
+  subjectCode: string;
+  subjectName: string;
+  programmingLanguage: SupportedLanguage;
+  missedLabDate: string;
+  reason: string;
+  preferredSlot: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Completed';
+  requestedAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  facultyRemarks?: string;
+  makeupLabSessionId?: string;
 }

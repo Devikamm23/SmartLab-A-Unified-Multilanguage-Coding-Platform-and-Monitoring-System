@@ -72,8 +72,8 @@ export const TeacherReports: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Academic Laboratory Assessment Reports</h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Academic Laboratory Assessment Reports</h1>
+          <p className="text-xs text-slate-600 mt-0.5">
             Export official grade sheets, laboratory session logs, and compilation metrics
           </p>
         </div>
@@ -81,7 +81,7 @@ export const TeacherReports: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={handlePrint}
-            className="py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors flex items-center gap-1.5 border border-slate-700"
+            className="py-1.5 px-3 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-700 text-xs font-semibold transition-colors flex items-center gap-1.5 border border-blue-200"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Print View</span>
@@ -89,7 +89,7 @@ export const TeacherReports: React.FC = () => {
 
           <button
             onClick={exportCSV}
-            className="py-1.5 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
+            className="py-1.5 px-3.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export CSV Grade Sheet</span>
@@ -98,7 +98,7 @@ export const TeacherReports: React.FC = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="flex flex-wrap items-center gap-3 bg-[#0e1738] border border-slate-800 rounded-xl p-3">
+      <div className="flex flex-wrap items-center gap-3 bg-white border border-blue-100 rounded-xl p-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
           <input
@@ -106,14 +106,14 @@ export const TeacherReports: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by student, USN, or experiment..."
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs focus:outline-hidden focus:border-sky-500"
+            className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs focus:outline-hidden focus:border-blue-500"
           />
         </div>
 
         <select
           value={selectedSemester}
           onChange={(e) => setSelectedSemester(e.target.value)}
-          className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-mono focus:outline-hidden focus:border-sky-500"
+          className="px-3 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs font-mono focus:outline-hidden focus:border-blue-500"
         >
           <option value="all">All Semesters</option>
           <option value="3">Semester 3</option>
@@ -125,7 +125,7 @@ export const TeacherReports: React.FC = () => {
         <select
           value={selectedBatch}
           onChange={(e) => setSelectedBatch(e.target.value)}
-          className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-mono focus:outline-hidden focus:border-sky-500"
+          className="px-3 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs font-mono focus:outline-hidden focus:border-blue-500"
         >
           <option value="all">All Batches</option>
           <option value="Batch A">Batch A</option>
@@ -136,7 +136,7 @@ export const TeacherReports: React.FC = () => {
         <select
           value={selectedSubject}
           onChange={(e) => setSelectedSubject(e.target.value)}
-          className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-mono focus:outline-hidden focus:border-sky-500"
+          className="px-3 py-1.5 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 text-xs font-mono focus:outline-hidden focus:border-blue-500"
         >
           <option value="all">All Subjects</option>
           {subjects.map((sub) => (
@@ -148,36 +148,36 @@ export const TeacherReports: React.FC = () => {
       </div>
 
       {/* Official Institutional Letterhead for Reports & Print View */}
-      <div className="bg-[#0e1738] border border-slate-800 rounded-xl p-5 shadow-sm space-y-2">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="bg-white border border-blue-100 rounded-xl p-5 shadow-sm space-y-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-100 pb-3">
           <div>
-            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-400">
+            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600">
               {COLLEGE_CONFIG.shortName} · Official Assessment Record
             </div>
-            <h2 className="text-base font-bold text-white tracking-tight">
+            <h2 className="text-base font-bold text-slate-900 tracking-tight">
               {COLLEGE_CONFIG.name}
             </h2>
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-slate-700">
               {COLLEGE_CONFIG.department} · {COLLEGE_CONFIG.labFacility}
             </p>
           </div>
-          <div className="text-left sm:text-right text-[11px] font-mono text-slate-400 shrink-0 space-y-0.5">
-            <div className="text-slate-300 font-semibold">{COLLEGE_CONFIG.city}, Karnataka - {COLLEGE_CONFIG.pincode}</div>
+          <div className="text-left sm:text-right text-[11px] font-mono text-slate-600 shrink-0 space-y-0.5">
+            <div className="text-slate-700 font-semibold">{COLLEGE_CONFIG.city}, Karnataka - {COLLEGE_CONFIG.pincode}</div>
             <div className="text-slate-500 text-[10px]">{COLLEGE_CONFIG.affiliation}</div>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1 font-mono">
+        <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-600 pt-1 font-mono">
           <span>Continuous Evaluation & Laboratory Monitoring Report</span>
-          <span>Verified Student Records: <strong className="text-emerald-400">{filtered.length}</strong></span>
+          <span>Verified Student Records: <strong className="text-emerald-600">{filtered.length}</strong></span>
         </div>
       </div>
 
       {/* Reports Table */}
-      <div className="bg-[#0e1738] border border-slate-800 rounded-xl overflow-hidden shadow-md">
+      <div className="bg-white border border-blue-100 rounded-xl overflow-hidden shadow-md">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead>
-              <tr className="bg-[#090f22] border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider text-[10px] font-mono">
+              <tr className="bg-[#f4f8ff] border-b border-blue-100 text-slate-600 font-semibold uppercase tracking-wider text-[10px] font-mono">
                 <th className="py-3 px-4">USN</th>
                 <th className="py-3 px-4">Student Name</th>
                 <th className="py-3 px-4">Batch</th>
@@ -189,34 +189,42 @@ export const TeacherReports: React.FC = () => {
                 <th className="py-3 px-4 text-center">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80 font-mono text-[11px]">
-              {filtered.map((s) => (
-                <tr key={s.id} className="hover:bg-slate-900/50 transition-colors">
-                  <td className="py-3 px-4 font-bold text-sky-400">{s.usn}</td>
-                  <td className="py-3 px-4 font-sans font-semibold text-slate-200">{s.studentName}</td>
-                  <td className="py-3 px-4 text-slate-300">Sem {s.semesterNumber} · {s.batch}</td>
-                  <td className="py-3 px-4 font-sans text-slate-300 max-w-[200px] truncate">{s.experimentName}</td>
-                  <td className="py-3 px-4 text-right text-emerald-400 font-semibold tabular-nums">
-                    {Math.floor(s.activeTimeSeconds / 60)}m {s.activeTimeSeconds % 60}s
-                  </td>
-                  <td className="py-3 px-4 text-right text-slate-300 tabular-nums">{s.compilationAttempts}</td>
-                  <td className="py-3 px-4 text-right text-slate-300 tabular-nums">{s.programExecutions}</td>
-                  <td className="py-3 px-4 text-right font-bold text-slate-100 tabular-nums">
-                    {s.score !== undefined ? `${s.score} / 50` : 'Pending'}
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
-                        s.status === 'completed'
-                          ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-sky-950 text-sky-400 border border-sky-500/30'
-                      }`}
-                    >
-                      {s.status}
-                    </span>
+            <tbody className="divide-y divide-blue-100 font-mono text-[11px]">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="py-10 px-4 text-center font-sans text-xs text-slate-500">
+                    No student lab records found yet. Records will populate as registered students complete lab sessions.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((s) => (
+                  <tr key={s.id} className="hover:bg-[#f4f8ff] transition-colors">
+                    <td className="py-3 px-4 font-bold text-blue-600">{s.usn}</td>
+                    <td className="py-3 px-4 font-sans font-semibold text-slate-800">{s.studentName}</td>
+                    <td className="py-3 px-4 text-slate-700">Sem {s.semesterNumber} · {s.batch}</td>
+                    <td className="py-3 px-4 font-sans text-slate-700 max-w-[200px] truncate">{s.experimentName}</td>
+                    <td className="py-3 px-4 text-right text-emerald-600 font-semibold tabular-nums">
+                      {Math.floor(s.activeTimeSeconds / 60)}m {s.activeTimeSeconds % 60}s
+                    </td>
+                    <td className="py-3 px-4 text-right text-slate-700 tabular-nums">{s.compilationAttempts}</td>
+                    <td className="py-3 px-4 text-right text-slate-700 tabular-nums">{s.programExecutions}</td>
+                    <td className="py-3 px-4 text-right font-bold text-slate-900 tabular-nums">
+                      {s.score !== undefined ? `${s.score} / 50` : 'Pending'}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
+                          s.status === 'completed'
+                            ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                            : 'bg-blue-50 text-blue-600 border border-blue-200'
+                        }`}
+                      >
+                        {s.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

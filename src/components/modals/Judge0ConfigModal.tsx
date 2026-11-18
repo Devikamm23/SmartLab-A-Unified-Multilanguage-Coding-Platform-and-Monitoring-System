@@ -67,30 +67,30 @@ export const Judge0ConfigModal: React.FC<Judge0ConfigModalProps> = ({ isOpen, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
-      <div className="w-full max-w-xl bg-[#0e1738] border border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+      <div className="w-full max-w-xl bg-white border border-blue-200 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#090f22]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-blue-100 bg-[#f4f8ff]">
           <div className="flex items-center gap-2">
-            <Cpu className="w-5 h-5 text-sky-400" />
-            <h2 className="text-base font-bold text-white">Judge0 Code Execution Settings</h2>
+            <Cpu className="w-5 h-5 text-blue-600" />
+            <h2 className="text-base font-bold text-slate-900">Judge0 Code Execution Settings</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-md text-slate-600 hover:text-slate-900 hover:bg-blue-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-5 overflow-y-auto text-xs text-slate-300">
+        <div className="p-6 space-y-5 overflow-y-auto text-xs text-slate-700">
           {/* Security Architecture Notice */}
-          <div className="p-3.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex items-start gap-3">
-            <ShieldAlert className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <span className="font-semibold text-emerald-300">Air-Gapped Server Guarantee</span>
-              <p className="text-slate-300 leading-relaxed text-[11px]">
+              <span className="font-semibold text-emerald-700">Air-Gapped Server Guarantee</span>
+              <p className="text-slate-700 leading-relaxed text-[11px]">
                 In accordance with GSSSIETW safety protocols, student code is{' '}
                 <strong>never executed directly inside the Node/Flask application server</strong>. Code runs
                 exclusively within the external containerized Judge0 CE sandbox or the isolated client-side
@@ -101,19 +101,19 @@ export const Judge0ConfigModal: React.FC<Judge0ConfigModalProps> = ({ isOpen, on
 
           {/* Engine Mode Toggle */}
           <div className="space-y-2">
-            <label className="font-semibold text-slate-200 block">Execution Mode</label>
+            <label className="font-semibold text-slate-800 block">Execution Mode</label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setConfig({ ...config, isMockEnabled: true })}
                 className={`p-3 rounded-lg border text-left transition-all ${
                   config.isMockEnabled
-                    ? 'bg-sky-500/15 border-sky-500 text-sky-200 shadow-sm'
-                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                    ? 'bg-blue-50 border-blue-500 text-blue-800 shadow-sm'
+                    : 'bg-blue-50/60 border-blue-100 text-slate-600 hover:border-blue-200'
                 }`}
               >
                 <div className="font-bold mb-0.5">SmartLab Client Sandbox</div>
-                <div className="text-[11px] text-slate-400">
+                <div className="text-[11px] text-slate-600">
                   Instant offline testing with algorithmic verification and test case grading.
                 </div>
               </button>
@@ -123,12 +123,12 @@ export const Judge0ConfigModal: React.FC<Judge0ConfigModalProps> = ({ isOpen, on
                 onClick={() => setConfig({ ...config, isMockEnabled: false })}
                 className={`p-3 rounded-lg border text-left transition-all ${
                   !config.isMockEnabled
-                    ? 'bg-indigo-500/20 border-indigo-500 text-indigo-200 shadow-sm'
-                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                    ? 'bg-blue-100 border-blue-500 text-blue-800 shadow-sm'
+                    : 'bg-blue-50/60 border-blue-100 text-slate-600 hover:border-blue-200'
                 }`}
               >
                 <div className="font-bold mb-0.5">Live Judge0 API Endpoint</div>
-                <div className="text-[11px] text-slate-400">
+                <div className="text-[11px] text-slate-600">
                   Containerized compiler execution using Judge0 CE or RapidAPI.
                 </div>
               </button>
@@ -136,70 +136,70 @@ export const Judge0ConfigModal: React.FC<Judge0ConfigModalProps> = ({ isOpen, on
           </div>
 
           {/* Judge0 Parameters */}
-          <div className="space-y-3 pt-2 border-t border-slate-800">
+          <div className="space-y-3 pt-2 border-t border-blue-100">
             <div>
-              <label className="font-medium text-slate-300 mb-1 block">Judge0 Base URL</label>
+              <label className="font-medium text-slate-700 mb-1 block">Judge0 Base URL</label>
               <input
                 type="text"
                 value={config.baseUrl}
                 onChange={(e) => setConfig({ ...config, baseUrl: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 font-mono text-xs focus:outline-hidden focus:border-sky-500"
+                className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 font-mono text-xs focus:outline-hidden focus:border-blue-500"
                 placeholder="https://judge0-ce.p.rapidapi.com or http://localhost:2358"
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="font-medium text-slate-300">API Key / Auth Token</label>
+                <label className="font-medium text-slate-700">API Key / Auth Token</label>
                 <span className="text-[11px] text-slate-500">Optional for self-hosted instances</span>
               </div>
               <input
                 type="password"
                 value={config.apiKey}
                 onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 font-mono text-xs focus:outline-hidden focus:border-sky-500"
+                className="w-full px-3 py-2 rounded-lg bg-blue-50/60 border border-blue-200 text-slate-800 font-mono text-xs focus:outline-hidden focus:border-blue-500"
                 placeholder="RapidAPI Key or X-Auth-Token"
               />
             </div>
           </div>
 
           {/* Language Mapping IDs */}
-          <div className="space-y-1.5 pt-2 border-t border-slate-800">
-            <span className="font-medium text-slate-300 block">Configured Language IDs</span>
+          <div className="space-y-1.5 pt-2 border-t border-blue-100">
+            <span className="font-medium text-slate-700 block">Configured Language IDs</span>
             <div className="grid grid-cols-4 gap-2 font-mono text-center text-[11px]">
-              <div className="p-2 rounded bg-slate-900 border border-slate-800">
-                <div className="text-slate-400">Python 3</div>
-                <div className="font-bold text-sky-400">ID: 71</div>
+              <div className="p-2 rounded bg-blue-50/60 border border-blue-100">
+                <div className="text-slate-600">Python 3</div>
+                <div className="font-bold text-blue-600">ID: 71</div>
               </div>
-              <div className="p-2 rounded bg-slate-900 border border-slate-800">
-                <div className="text-slate-400">Java 17</div>
-                <div className="font-bold text-sky-400">ID: 62</div>
+              <div className="p-2 rounded bg-blue-50/60 border border-blue-100">
+                <div className="text-slate-600">Java 17</div>
+                <div className="font-bold text-blue-600">ID: 62</div>
               </div>
-              <div className="p-2 rounded bg-slate-900 border border-slate-800">
-                <div className="text-slate-400">C (GCC 11)</div>
-                <div className="font-bold text-sky-400">ID: 50</div>
+              <div className="p-2 rounded bg-blue-50/60 border border-blue-100">
+                <div className="text-slate-600">C (GCC 11)</div>
+                <div className="font-bold text-blue-600">ID: 50</div>
               </div>
-              <div className="p-2 rounded bg-slate-900 border border-slate-800">
-                <div className="text-slate-400">C++ (GCC 11)</div>
-                <div className="font-bold text-sky-400">ID: 54</div>
+              <div className="p-2 rounded bg-blue-50/60 border border-blue-100">
+                <div className="text-slate-600">C++ (GCC 11)</div>
+                <div className="font-bold text-blue-600">ID: 54</div>
               </div>
             </div>
           </div>
 
           {testStatus && (
-            <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-sky-300">
+            <div className="p-2.5 rounded-lg bg-blue-50/60 border border-blue-200 text-xs text-blue-700">
               {testStatus}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-800 bg-[#090f22] flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-blue-100 bg-[#f4f8ff] flex items-center justify-between">
           <button
             type="button"
             onClick={handleTestConnection}
             disabled={isTesting}
-            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-700 text-xs font-medium transition-colors"
           >
             {isTesting ? 'Testing Link...' : 'Test Connection'}
           </button>
@@ -208,14 +208,14 @@ export const Judge0ConfigModal: React.FC<Judge0ConfigModalProps> = ({ isOpen, on
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
+              className="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-700 text-xs font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium transition-colors shadow-xs"
+              className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors shadow-xs"
             >
               {savedSuccess ? 'Saved!' : 'Save Configuration'}
             </button>

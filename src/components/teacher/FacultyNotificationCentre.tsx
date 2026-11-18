@@ -13,7 +13,6 @@ import {
   GitCompare,
   Filter,
   CalendarCheck2,
-  Sparkles,
 } from 'lucide-react';
 
 export const FacultyNotificationCentre: React.FC = () => {
@@ -27,7 +26,6 @@ export const FacultyNotificationCentre: React.FC = () => {
     dismissIntegrityAlert,
   } = useApp();
 
-  const [activeCategory, setActiveCategory] = useState<string>('all');
   const [filterUnreadOnly, setFilterUnreadOnly] = useState<boolean>(false);
   const [selectedAlertForModal, setSelectedAlertForModal] = useState<AcademicIntegrityAlert | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,7 +44,6 @@ export const FacultyNotificationCentre: React.FC = () => {
   };
 
   const filtered = facultyNotifications.filter((n) => {
-    if (activeCategory !== 'all' && n.category !== activeCategory) return false;
     if (filterUnreadOnly && n.isRead) return false;
     return true;
   });
@@ -55,25 +52,25 @@ export const FacultyNotificationCentre: React.FC = () => {
     switch (category) {
       case 'integrity':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-950 text-rose-400 border border-rose-500/30">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-50 text-rose-600 border border-rose-200">
             <ShieldAlert className="w-3 h-3" /> Integrity Alert
           </span>
         );
       case 'submission':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
             <CheckCircle2 className="w-3 h-3" /> Submission Milestone
           </span>
         );
       case 'session':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-950 text-indigo-400 border border-indigo-500/30">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-600 border border-blue-200">
             <CalendarCheck2 className="w-3 h-3" /> Lab Milestone
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-800 text-slate-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-slate-700">
             <Bell className="w-3 h-3" /> Announcement
           </span>
         );
@@ -86,19 +83,19 @@ export const FacultyNotificationCentre: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
               <Bell className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-white tracking-tight">Faculty Notification Centre</h1>
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">Faculty Notification Centre</h1>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full text-xs font-bold font-mono bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-bold font-mono bg-rose-100 text-rose-600 border border-rose-200">
                     {unreadCount} unread
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600">
                 Real-time security warnings, copy-paste triggers, and laboratory milestones for {COLLEGE_CONFIG.name}
               </p>
             </div>
@@ -109,16 +106,16 @@ export const FacultyNotificationCentre: React.FC = () => {
           {unreadCount > 0 && (
             <button
               onClick={markAllFacultyNotificationsAsRead}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-800 text-xs font-medium border border-blue-200 transition-colors flex items-center gap-1.5"
             >
-              <CheckCheck className="w-3.5 h-3.5 text-sky-400" />
+              <CheckCheck className="w-3.5 h-3.5 text-blue-600" />
               <span>Mark All as Read</span>
             </button>
           )}
           {facultyNotifications.length > 0 && (
             <button
               onClick={clearFacultyNotifications}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-rose-400 text-xs font-medium border border-slate-700 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-700 hover:text-rose-600 text-xs font-medium border border-blue-200 transition-colors flex items-center gap-1.5"
             >
               <Trash2 className="w-3.5 h-3.5" />
               <span>Clear History</span>
@@ -127,58 +124,18 @@ export const FacultyNotificationCentre: React.FC = () => {
         </div>
       </div>
 
-      {/* Category Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0e1738] border border-slate-800 p-2.5 rounded-xl">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <button
-            onClick={() => setActiveCategory('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              activeCategory === 'all'
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-          >
-            All Notifications ({facultyNotifications.length})
-          </button>
-          <button
-            onClick={() => setActiveCategory('integrity')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 ${
-              activeCategory === 'integrity'
-                ? 'bg-rose-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-rose-300 hover:bg-slate-800/60'
-            }`}
-          >
-            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
-            <span>Academic Integrity ({facultyNotifications.filter((n) => n.category === 'integrity').length})</span>
-          </button>
-          <button
-            onClick={() => setActiveCategory('submission')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              activeCategory === 'submission'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-          >
-            Submissions ({facultyNotifications.filter((n) => n.category === 'submission').length})
-          </button>
-          <button
-            onClick={() => setActiveCategory('session')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              activeCategory === 'session'
-                ? 'bg-sky-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-          >
-            Lab Sessions ({facultyNotifications.filter((n) => n.category === 'session').length})
-          </button>
-        </div>
+      {/* Unified Notifications Control Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white border border-blue-100 px-4 py-2.5 rounded-xl text-xs">
+        <span className="font-mono text-slate-700">
+          All Notifications (<strong className="text-slate-900">{facultyNotifications.length}</strong>)
+        </span>
 
         <button
           onClick={() => setFilterUnreadOnly(!filterUnreadOnly)}
-          className={`px-2.5 py-1 rounded-md text-xs font-medium border flex items-center gap-1.5 transition-colors ${
+          className={`px-2.5 py-1 rounded-md text-xs font-medium border flex items-center gap-1.5 transition-colors cursor-pointer ${
             filterUnreadOnly
-              ? 'bg-amber-950/80 border-amber-500/40 text-amber-300'
-              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+              ? 'bg-amber-50 border-amber-300 text-amber-700'
+              : 'bg-blue-50/60 border-blue-100 text-slate-600 hover:text-slate-800'
           }`}
         >
           <Filter className="w-3 h-3" />
@@ -189,9 +146,9 @@ export const FacultyNotificationCentre: React.FC = () => {
       {/* Notifications List */}
       <div className="space-y-3">
         {filtered.length === 0 ? (
-          <div className="bg-[#0e1738] border border-slate-800 rounded-xl p-12 text-center text-xs text-slate-500 space-y-2">
+          <div className="bg-white border border-blue-100 rounded-xl p-12 text-center text-xs text-slate-500 space-y-2">
             <Bell className="w-8 h-8 text-slate-600 mx-auto" />
-            <p>No notifications matching your category filter.</p>
+            <p>{filterUnreadOnly ? 'No unread notifications.' : 'No notifications yet.'}</p>
           </div>
         ) : (
           filtered.map((item) => (
@@ -199,32 +156,32 @@ export const FacultyNotificationCentre: React.FC = () => {
               key={item.id}
               className={`p-4 rounded-xl border transition-all space-y-3 ${
                 !item.isRead
-                  ? 'bg-[#0f1b42] border-indigo-500/40 shadow-sm'
-                  : 'bg-[#0e1738] border-slate-800 hover:border-slate-700'
+                  ? 'bg-[#0f1b42] border-blue-300 shadow-sm'
+                  : 'bg-white border-blue-100 hover:border-blue-200'
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     {getCategoryBadge(item.category)}
-                    <h3 className="text-sm font-bold text-white tracking-tight">{item.title}</h3>
+                    <h3 className="text-sm font-bold text-slate-900 tracking-tight">{item.title}</h3>
                     {!item.isRead && (
                       <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                     )}
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
+                  <p className="text-xs text-slate-700 leading-relaxed max-w-3xl">
                     {item.description}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
+                  <span className="text-[11px] text-slate-600 font-mono flex items-center gap-1">
                     <Clock className="w-3 h-3" /> {item.timestamp}
                   </span>
                   {!item.isRead && (
                     <button
                       onClick={() => markFacultyNotificationAsRead(item.id)}
-                      className="text-[11px] text-sky-400 hover:text-sky-300 font-medium ml-2"
+                      className="text-[11px] text-blue-600 hover:text-blue-700 font-medium ml-2"
                     >
                       Mark Read
                     </button>
@@ -234,19 +191,19 @@ export const FacultyNotificationCentre: React.FC = () => {
 
               {/* If Integrity Alert: Display contextual details and inspection action */}
               {item.category === 'integrity' && item.integrityAlertId && (
-                <div className="p-3 rounded-lg bg-slate-900 border border-rose-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="p-3 rounded-lg bg-blue-50/60 border border-rose-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                   <div className="flex items-center gap-3 font-mono">
-                    <span className="text-slate-400">
-                      Student: <strong className="text-white">{item.studentName}</strong>
+                    <span className="text-slate-600">
+                      Student: <strong className="text-slate-900">{item.studentName}</strong>
                     </span>
                     <span className="text-slate-500">·</span>
-                    <span className="text-emerald-400 font-bold">{item.usn}</span>
+                    <span className="text-emerald-600 font-bold">{item.usn}</span>
                     <span className="text-slate-500">·</span>
-                    <span className="text-rose-400 font-bold">{item.riskLevel} Risk</span>
+                    <span className="text-rose-600 font-bold">{item.riskLevel} Risk</span>
                     {item.similarityScore && (
                       <>
                         <span className="text-slate-500">·</span>
-                        <span className="text-sky-400">{item.similarityScore}% Similarity</span>
+                        <span className="text-blue-600">{item.similarityScore}% Similarity</span>
                       </>
                     )}
                   </div>

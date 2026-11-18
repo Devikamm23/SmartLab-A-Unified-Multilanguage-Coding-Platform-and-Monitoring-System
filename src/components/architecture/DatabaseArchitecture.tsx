@@ -401,19 +401,19 @@ export const DatabaseArchitecture: React.FC = () => {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
             SmartLab Relational Database Architecture (14 Tables)
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-600 mt-0.5">
             PostgreSQL / Supabase & MySQL normalized schema with strict relational integrity
           </p>
         </div>
 
-        <div className="flex items-center gap-1 p-1 bg-slate-900 border border-slate-800 rounded-lg self-start sm:self-auto">
+        <div className="flex items-center gap-1 p-1 bg-blue-50/60 border border-blue-100 rounded-lg self-start sm:self-auto">
           <button
             onClick={() => setActiveTab('erd')}
             className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
-              activeTab === 'erd' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'erd' ? 'bg-amber-600 text-white' : 'text-slate-600 hover:text-slate-800'
             }`}
           >
             14 Entities Schema Viewer
@@ -421,7 +421,7 @@ export const DatabaseArchitecture: React.FC = () => {
           <button
             onClick={() => setActiveTab('ddl')}
             className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
-              activeTab === 'ddl' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'ddl' ? 'bg-amber-600 text-white' : 'text-slate-600 hover:text-slate-800'
             }`}
           >
             SQL DDL Generator
@@ -439,26 +439,26 @@ export const DatabaseArchitecture: React.FC = () => {
                 onClick={() => setSelectedEntity(ent)}
                 className={`w-full p-2.5 rounded-xl border text-left transition-all ${
                   selectedEntity.tableName === ent.tableName
-                    ? 'bg-slate-900 border-amber-500 text-white shadow-md'
-                    : 'bg-[#0e1738] border-slate-800 text-slate-300 hover:border-slate-700'
+                    ? 'bg-blue-50/60 border-amber-500 text-slate-900 shadow-md'
+                    : 'bg-white border-blue-100 text-slate-700 hover:border-blue-200'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs">{ent.name}</span>
-                  <span className="font-mono text-[10px] text-amber-400">{ent.tableName}</span>
+                  <span className="font-mono text-[10px] text-amber-600">{ent.tableName}</span>
                 </div>
               </button>
             ))}
           </div>
 
           {/* Table specification */}
-          <div className="lg:col-span-8 bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="lg:col-span-8 bg-white border border-blue-100 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-blue-100 pb-3">
               <div>
-                <h2 className="text-base font-bold text-white font-mono">{selectedEntity.tableName}</h2>
-                <p className="text-xs text-slate-400 mt-0.5">{selectedEntity.description}</p>
+                <h2 className="text-base font-bold text-slate-900 font-mono">{selectedEntity.tableName}</h2>
+                <p className="text-xs text-slate-600 mt-0.5">{selectedEntity.description}</p>
               </div>
-              <span className="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-800">
+              <span className="text-xs font-mono text-slate-600 bg-blue-50/60 px-2 py-1 rounded border border-blue-100">
                 {selectedEntity.columns.length} Columns
               </span>
             </div>
@@ -466,31 +466,31 @@ export const DatabaseArchitecture: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
                 <thead>
-                  <tr className="bg-[#090f22] border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+                  <tr className="bg-[#f4f8ff] border-b border-blue-100 text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
                     <th className="py-2.5 px-3">Column</th>
                     <th className="py-2.5 px-3">Type</th>
                     <th className="py-2.5 px-3">Constraints</th>
                     <th className="py-2.5 px-3">Purpose</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80 font-mono text-[11px]">
+                <tbody className="divide-y divide-blue-100 font-mono text-[11px]">
                   {selectedEntity.columns.map((col) => (
-                    <tr key={col.name} className="hover:bg-slate-900/50">
-                      <td className="py-2 px-3 font-bold text-slate-200">{col.name}</td>
-                      <td className="py-2 px-3 text-sky-400">{col.type}</td>
+                    <tr key={col.name} className="hover:bg-[#f4f8ff]">
+                      <td className="py-2 px-3 font-bold text-slate-800">{col.name}</td>
+                      <td className="py-2 px-3 text-blue-600">{col.type}</td>
                       <td className="py-2 px-3">
                         {col.isPrimary && (
-                          <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] mr-1">
+                          <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200 text-[10px] mr-1">
                             PK
                           </span>
                         )}
                         {col.isForeign && (
-                          <span className="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px]">
+                          <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 border border-blue-200 text-[10px]">
                             FK &rarr; {col.references}
                           </span>
                         )}
                       </td>
-                      <td className="py-2 px-3 text-slate-400 font-sans text-xs">{col.description}</td>
+                      <td className="py-2 px-3 text-slate-600 font-sans text-xs">{col.description}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -499,21 +499,21 @@ export const DatabaseArchitecture: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-[#0e1738] border border-slate-800 rounded-xl p-5 space-y-4">
+        <div className="bg-white border border-blue-100 rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-white">PostgreSQL / Supabase 14-Table DDL</h2>
-              <p className="text-xs text-slate-400">Production-ready script with UUIDs, foreign keys, and check constraints</p>
+              <h2 className="text-sm font-bold text-slate-900">PostgreSQL / Supabase 14-Table DDL</h2>
+              <p className="text-xs text-slate-600">Production-ready script with UUIDs, foreign keys, and check constraints</p>
             </div>
             <button
               onClick={handleCopy}
-              className="py-1.5 px-3.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs font-bold transition-colors flex items-center gap-1.5 border border-slate-700"
+              className="py-1.5 px-3.5 rounded-lg bg-blue-100 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-colors flex items-center gap-1.5 border border-blue-200"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               <span>{copied ? 'Copied!' : 'Copy Script'}</span>
             </button>
           </div>
-          <pre className="p-4 rounded-xl bg-[#070b19] border border-slate-800 font-mono text-[11px] text-slate-300 leading-relaxed overflow-x-auto max-h-[500px]">
+          <pre className="p-4 rounded-xl bg-[#f4f8ff] border border-blue-100 font-mono text-[11px] text-slate-700 leading-relaxed overflow-x-auto max-h-[500px]">
             {POSTGRESQL_DDL}
           </pre>
         </div>

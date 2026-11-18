@@ -108,11 +108,11 @@ export const LabReportModal: React.FC<LabReportModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-[#0e1738] border border-slate-700 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden my-6 max-h-[92vh] flex flex-col">
+      <div className="bg-white border border-blue-200 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden my-6 max-h-[92vh] flex flex-col">
         {/* Modal Top Bar */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60 sticky top-0 z-10">
-          <div className="flex items-center gap-2 text-white font-bold text-sm">
-            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+        <div className="p-4 border-b border-blue-100 flex items-center justify-between bg-blue-50/60 sticky top-0 z-10">
+          <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
             <span>Academic Laboratory Performance & Evaluation Report</span>
           </div>
 
@@ -127,7 +127,7 @@ export const LabReportModal: React.FC<LabReportModalProps> = ({
 
             <button
               onClick={handlePrint}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg bg-blue-100 hover:bg-blue-100 text-slate-800 text-xs font-semibold border border-blue-200 transition-colors flex items-center gap-1.5"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print Report</span>
@@ -135,7 +135,7 @@ export const LabReportModal: React.FC<LabReportModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-blue-100 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -145,52 +145,52 @@ export const LabReportModal: React.FC<LabReportModalProps> = ({
         {/* Printable Document Body */}
         <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs" id="printable-report">
           {/* Institutional Header */}
-          <div className="text-center space-y-1 border-b border-slate-800 pb-4">
-            <div className="text-[11px] font-mono uppercase tracking-widest text-sky-400 font-bold">
+          <div className="text-center space-y-1 border-b border-blue-100 pb-4">
+            <div className="text-[11px] font-mono uppercase tracking-widest text-blue-600 font-bold">
               {COLLEGE_CONFIG.shortName}
             </div>
-            <h1 className="text-base sm:text-lg font-bold text-white tracking-tight">
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
               {COLLEGE_CONFIG.name}
             </h1>
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-slate-700">
               {COLLEGE_CONFIG.department} · {COLLEGE_CONFIG.affiliation}
             </p>
-            <div className="inline-block px-3 py-1 rounded bg-slate-900 border border-slate-800 text-[11px] font-mono text-slate-300 mt-2">
+            <div className="inline-block px-3 py-1 rounded bg-blue-50/60 border border-blue-100 text-[11px] font-mono text-slate-700 mt-2">
               Course Practical Evaluation Report · 120-Minute Session · Term 2026-2027
             </div>
           </div>
 
           {/* Session Metadata Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-blue-50/60 border border-blue-100 text-xs font-mono">
             <div>
               <span className="text-slate-500 block text-[10px] uppercase">Enrolled Cohort</span>
-              <span className="text-slate-200 font-bold">
+              <span className="text-slate-800 font-bold">
                 Semester {semesterNumber} ({batchName})
               </span>
             </div>
             <div>
               <span className="text-slate-500 block text-[10px] uppercase">Total Students</span>
-              <span className="text-slate-200 font-bold">{totalStudents} Enrolled</span>
+              <span className="text-slate-800 font-bold">{totalStudents} Enrolled</span>
             </div>
             <div>
               <span className="text-slate-500 block text-[10px] uppercase">Attendance Ratio</span>
-              <span className="text-emerald-400 font-bold">
+              <span className="text-emerald-600 font-bold">
                 {presentCount} Present · {absentCount} Absent
               </span>
             </div>
             <div>
               <span className="text-slate-500 block text-[10px] uppercase">Avg Approved Score</span>
-              <span className="text-sky-400 font-bold">
+              <span className="text-blue-600 font-bold">
                 {averageApprovedScore} / 50 Marks
               </span>
             </div>
           </div>
 
           {/* Performance Report Table */}
-          <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <div className="overflow-x-auto rounded-xl border border-blue-100">
             <table className="w-full text-xs text-left">
               <thead>
-                <tr className="bg-slate-900 border-b border-slate-800 text-slate-400 font-semibold text-[10px] uppercase font-mono">
+                <tr className="bg-blue-50/60 border-b border-blue-100 text-slate-600 font-semibold text-[10px] uppercase font-mono">
                   <th className="py-2.5 px-3">Student Name</th>
                   <th className="py-2.5 px-3">Permanent USN</th>
                   <th className="py-2.5 px-2">Status</th>
@@ -202,48 +202,48 @@ export const LabReportModal: React.FC<LabReportModalProps> = ({
                   <th className="py-2.5 px-3">Performance Feedback</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono text-[11px]">
+              <tbody className="divide-y divide-blue-100 font-mono text-[11px]">
                 {sessions.map((ses) => (
-                  <tr key={ses.id} className="hover:bg-slate-900/40">
-                    <td className="py-2.5 px-3 font-sans font-semibold text-slate-200">
+                  <tr key={ses.id} className="hover:bg-[#f4f8ff]">
+                    <td className="py-2.5 px-3 font-sans font-semibold text-slate-800">
                       {ses.studentName}
                     </td>
-                    <td className="py-2.5 px-3 text-emerald-400 font-bold">
+                    <td className="py-2.5 px-3 text-emerald-600 font-bold">
                       {ses.usn}
                     </td>
                     <td className="py-2.5 px-2">
                       <span
                         className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
                           ses.activityStatus === 'Typing'
-                            ? 'text-emerald-400 bg-emerald-950 border border-emerald-500/30'
+                            ? 'text-emerald-600 bg-emerald-50 border border-emerald-200'
                             : ses.activityStatus === 'Idle'
-                            ? 'text-amber-400 bg-amber-950 border border-amber-500/30'
+                            ? 'text-amber-600 bg-amber-50 border border-amber-200'
                             : ses.activityStatus === 'Viewing'
-                            ? 'text-sky-400 bg-sky-950 border border-sky-500/30'
+                            ? 'text-blue-600 bg-blue-50 border border-blue-200'
                             : ses.activityStatus === 'Absent'
-                            ? 'text-rose-400 bg-rose-950 border border-rose-500/30'
-                            : 'text-purple-300 bg-purple-950 border border-purple-500/30'
+                            ? 'text-rose-600 bg-rose-50 border border-rose-200'
+                            : 'text-blue-700 bg-blue-50 border border-blue-200'
                         }`}
                       >
                         {ses.activityStatus}
                       </span>
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-300">
+                    <td className="py-2.5 px-2 text-right text-slate-700">
                       {Math.round(ses.activeTimeSeconds / 60)}m
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-400">
+                    <td className="py-2.5 px-2 text-right text-slate-600">
                       {Math.round(ses.idleTimeSeconds / 60)}m
                     </td>
-                    <td className="py-2.5 px-2 text-right text-slate-300">
+                    <td className="py-2.5 px-2 text-right text-slate-700">
                       {ses.testCasesPassed || 0}/5
                     </td>
-                    <td className="py-2.5 px-3 text-right text-indigo-300 font-bold">
+                    <td className="py-2.5 px-3 text-right text-blue-700 font-bold">
                       {ses.aiEvaluation?.totalSuggestedScore ?? ses.score ?? 0}
                     </td>
-                    <td className="py-2.5 px-3 text-right text-emerald-400 font-bold">
+                    <td className="py-2.5 px-3 text-right text-emerald-600 font-bold">
                       {ses.facultyApprovedScore ?? ses.score ?? 0}
                     </td>
-                    <td className="py-2.5 px-3 font-sans text-slate-400 text-[10px] max-w-xs truncate">
+                    <td className="py-2.5 px-3 font-sans text-slate-600 text-[10px] max-w-xs truncate">
                       {ses.facultyFeedback || ses.aiEvaluation?.overallExplanation || 'Satisfactory.'}
                     </td>
                   </tr>
@@ -253,15 +253,15 @@ export const LabReportModal: React.FC<LabReportModalProps> = ({
           </div>
 
           {/* Academic Signature Block */}
-          <div className="grid grid-cols-2 pt-6 border-t border-slate-800 text-[11px] text-slate-400 font-sans">
+          <div className="grid grid-cols-2 pt-6 border-t border-blue-100 text-[11px] text-slate-600 font-sans">
             <div>
-              <span className="block font-semibold text-slate-300">Course Coordinator / Faculty In-Charge</span>
-              <span>Dr. Arvind Kulkarni, Associate Professor</span>
+              <span className="block font-semibold text-slate-700">Course Coordinator / Faculty In-Charge</span>
+              <span>Dr Girish S C, Associate Professor</span>
               <span className="block text-[10px] text-slate-500">Department of Information Science & Engineering</span>
             </div>
 
             <div className="text-right">
-              <span className="block font-semibold text-slate-300">Head of Department</span>
+              <span className="block font-semibold text-slate-700">Head of Department</span>
               <span>Dr. M. S. Prema, Professor & HOD</span>
               <span className="block text-[10px] text-slate-500">{COLLEGE_CONFIG.name}</span>
             </div>

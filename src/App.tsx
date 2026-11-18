@@ -15,8 +15,6 @@ import { MyLab } from './components/student/MyLab';
 import { LabHistory } from './components/student/LabHistory';
 import { StudentProfile } from './components/student/StudentProfile';
 import { NotificationCentre } from './components/student/NotificationCentre';
-import { DeadlineTracker } from './components/student/DeadlineTracker';
-import { FacultyAnnouncements } from './components/student/FacultyAnnouncements';
 import { AttendanceOverview } from './components/student/AttendanceOverview';
 import { StudentQuizzes } from './components/student/StudentQuizzes';
 import { HelpAndSupport } from './components/student/HelpAndSupport';
@@ -55,8 +53,6 @@ const ALLOWED_TABS: Record<UserRole, string[]> = {
     'lab_history',
     'profile',
     'notifications',
-    'deadlines',
-    'announcements',
     'attendance',
     'quizzes',
     'support',
@@ -106,8 +102,21 @@ const MainLayout: React.FC = () => {
 
   const isTabAllowed = ALLOWED_TABS[currentRole]?.includes(activeNavTab);
 
+  // Full-page dedicated Lab Workspace when student launches Start Lab
+  if (currentRole === 'student' && activeNavTab === 'editor') {
+    return (
+      <div className="min-h-screen h-screen bg-[#f4f8ff] text-slate-900 flex flex-col font-sans overflow-hidden">
+        <OnlineCodeEditor onOpenJudge0Modal={() => setIsJudge0ModalOpen(true)} />
+        <Judge0ConfigModal
+          isOpen={isJudge0ModalOpen}
+          onClose={() => setIsJudge0ModalOpen(false)}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#070b19] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f4f8ff] text-slate-900 flex flex-col font-sans">
       {/* Top Navigation Bar without Role Switcher */}
       <Navbar onOpenJudge0Modal={() => setIsJudge0ModalOpen(true)} />
 
@@ -117,7 +126,7 @@ const MainLayout: React.FC = () => {
         <Sidebar onOpenJudge0Modal={() => setIsJudge0ModalOpen(true)} />
 
         {/* Content Viewport */}
-        <main className="flex-1 overflow-y-auto bg-[#070b19]">
+        <main className="flex-1 overflow-y-auto bg-[#f4f8ff]">
           {/* Fallback to role-specific dashboard if unauthorized tab */}
           {(!isTabAllowed || activeNavTab === 'dashboard') && (
             <>
@@ -137,8 +146,6 @@ const MainLayout: React.FC = () => {
               {activeNavTab === 'lab_history' && <LabHistory />}
               {activeNavTab === 'profile' && <StudentProfile />}
               {activeNavTab === 'notifications' && <NotificationCentre />}
-              {activeNavTab === 'deadlines' && <DeadlineTracker />}
-              {activeNavTab === 'announcements' && <FacultyAnnouncements />}
               {activeNavTab === 'attendance' && <AttendanceOverview />}
               {activeNavTab === 'quizzes' && <StudentQuizzes />}
               {activeNavTab === 'support' && <HelpAndSupport />}
@@ -157,26 +164,26 @@ const MainLayout: React.FC = () => {
               {activeNavTab === 'teacher_reports' && <TeacherReports />}
               {activeNavTab === 'profile' && (
                 <div className="p-6 max-w-4xl mx-auto">
-                  <div className="bg-[#0e1738] border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center gap-5 shadow-lg">
+                  <div className="bg-white border border-blue-100 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center gap-5 shadow-lg">
                     {currentUser.avatar ? (
                       <img
                         src={currentUser.avatar}
                         alt={currentUser.name}
-                        className="w-20 h-20 rounded-2xl object-cover border-2 border-indigo-500/40 shrink-0"
+                        className="w-20 h-20 rounded-2xl object-cover border-2 border-blue-300 shrink-0"
                       />
                     ) : (
-                      <div className="w-20 h-20 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-2xl font-bold text-indigo-300 shrink-0">
+                      <div className="w-20 h-20 rounded-2xl bg-blue-100 border border-blue-300 flex items-center justify-center text-2xl font-bold text-blue-700 shrink-0">
                         {currentUser.name.charAt(0)}
                       </div>
                     )}
                     <div className="space-y-1.5">
-                      <h2 className="text-lg font-bold text-white">{currentUser.name}</h2>
-                      <p className="text-xs text-indigo-300 font-semibold">
+                      <h2 className="text-lg font-bold text-slate-900">{currentUser.name}</h2>
+                      <p className="text-xs text-blue-700 font-semibold">
                         {currentUser.designation || 'Faculty'} · {currentUser.department}
                       </p>
-                      <div className="flex flex-wrap gap-3 text-xs font-mono text-slate-300 pt-1">
-                        <span>Faculty ID: <strong className="text-sky-400">{currentUser.employeeCode || 'FAC-ISE-01'}</strong></span>
-                        <span>Email: <strong className="text-slate-200">{currentUser.email}</strong></span>
+                      <div className="flex flex-wrap gap-3 text-xs font-mono text-slate-700 pt-1">
+                        <span>Faculty ID: <strong className="text-blue-600">{currentUser.employeeCode || 'FAC-ISE-01'}</strong></span>
+                        <span>Email: <strong className="text-slate-800">{currentUser.email}</strong></span>
                       </div>
                     </div>
                   </div>
